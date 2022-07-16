@@ -46,6 +46,7 @@ import me.guitarxpress.gibcraft.managers.ItemManager;
 import me.guitarxpress.gibcraft.utils.ConfigClass;
 import me.guitarxpress.gibcraft.utils.Metrics;
 import me.guitarxpress.gibcraft.utils.RepeatingTask;
+import me.guitarxpress.gibcraft.utils.Utils;
 
 public class GibCraft extends JavaPlugin {
 
@@ -80,12 +81,14 @@ public class GibCraft extends JavaPlugin {
 		getConfig().options().copyDefaults(true);
 		getConfig().options().copyHeader(true);
 		saveDefaultConfig();
+
 		ItemManager.init();
 		gm = new GameManager(this);
 		am = new ArenaManager(this);
 		cfg = new ConfigClass(this);
 		dataCfg = ConfigClass.getDataCfg();
 		protocolManager = ProtocolLibrary.getProtocolManager();
+
 		getServer().getPluginManager().registerEvents(new EditMode(this), this);
 		getServer().getPluginManager().registerEvents(new EntityDamageByEntity(this), this);
 		getServer().getPluginManager().registerEvents(new EntityDamage(this), this);
@@ -99,13 +102,16 @@ public class GibCraft extends JavaPlugin {
 		getServer().getPluginManager().registerEvents(new PlayerInteractAtEntity(this), this);
 		getServer().getPluginManager().registerEvents(new ToggleFlight(this), this);
 		getServer().getPluginManager().registerEvents(new CommandPreprocess(this), this);
+
 		getServer().getPluginCommand("gibcraft").setExecutor(new Commands(this));
 		getServer().getPluginCommand("gibcraft").setTabCompleter(new TabComplete(this));
+
 		new PacketSend(this);
 		loadData();
 		createPowerUps();
 		startGlobalRunnableSecond(this);
 		startGlobalRunnableTick(this);
+
 		new Metrics(this, 15791);
 
 		getServer().getConsoleSender().sendMessage("§7[§4Gib§6Craft§7] §aEnabled");
@@ -243,6 +249,7 @@ public class GibCraft extends JavaPlugin {
 		}
 	}
 
+	// Runs every second
 	public void startGlobalRunnableSecond(GibCraft plugin) {
 		new RepeatingTask(plugin, 0, 1 * 20) {
 			int puTimer = 0;
@@ -253,10 +260,7 @@ public class GibCraft extends JavaPlugin {
 					for (Location loc : SignEvents.signsLoc) {
 						Sign sign = (Sign) loc.getWorld().getBlockAt(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ())
 								.getState();
-						String s = sign.getLine(1);
-						if (s.length() > 2) {
-							s = s.substring(2, s.length()); // Remove "§6" from the line in order to get track name
-						}
+						String s = Utils.getNameFromString(sign.getLine(1));
 						SignEvents.updateSign(sign, am, s);
 					}
 
@@ -301,6 +305,7 @@ public class GibCraft extends JavaPlugin {
 		};
 	}
 
+	// Runs every tick
 	public void startGlobalRunnableTick(GibCraft plugin) {
 		new RepeatingTask(plugin, 0, 1) {
 			int asRotation = 0;
@@ -334,7 +339,7 @@ public class GibCraft extends JavaPlugin {
 									as.getLocation().add(new Location(as.getWorld(), 0, 1.8, 0)).clone(), 2, .5, .5, .5,
 									1, new Particle.DustOptions(Color.YELLOW, (float) 1.0));
 							as.getWorld().spawnParticle(Particle.END_ROD,
-									as.getLocation().add(new Location(as.getWorld(), 0, 1.8, 0)).clone(), 2, .5, .5, .5,
+									as.getLocation().add(new Location(as.getWorld(), 0, 1.8, 0)).clone(), 0, .5, .5, .5,
 									1);
 						}
 					}

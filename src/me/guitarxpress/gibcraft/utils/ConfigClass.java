@@ -59,8 +59,6 @@ public class ConfigClass {
 	}
 
 	public void createNewArenaFiles() {
-//		arenaFolder = new File(plugin.getDataFolder(), arenaPath);
-
 		if (!arenaFolder.exists())
 			arenaFolder.mkdir();
 
@@ -120,8 +118,6 @@ public class ConfigClass {
 	}
 
 	public void createNewPlayerFiles() {
-//		playerFolder = new File(plugin.getDataFolder(), playerPath);
-
 		if (!playerFolder.exists())
 			playerFolder.mkdir();
 

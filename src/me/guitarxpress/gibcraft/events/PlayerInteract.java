@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Color;
 import org.bukkit.GameMode;
@@ -26,7 +25,6 @@ import org.bukkit.util.Vector;
 
 import me.guitarxpress.gibcraft.Arena;
 import me.guitarxpress.gibcraft.GibCraft;
-import me.guitarxpress.gibcraft.Stats;
 import me.guitarxpress.gibcraft.enums.Status;
 import me.guitarxpress.gibcraft.managers.ArenaManager;
 import me.guitarxpress.gibcraft.managers.GameManager;
@@ -46,27 +44,19 @@ public class PlayerInteract implements Listener {
 	Particle.DustOptions dustOrange = new Particle.DustOptions(Color.ORANGE, (float) 1.0);
 	Particle.DustOptions dustLime = new Particle.DustOptions(Color.LIME, (float) 1.0);
 	Particle.DustOptions dustGreen = new Particle.DustOptions(Color.GREEN, (float) 1.0);
-	Particle.DustOptions dustWhite = new Particle.DustOptions(Color.WHITE, (float) 1.0);
-	Particle.DustOptions dustBlack = new Particle.DustOptions(Color.BLACK, (float) 1.0);
 
 	public static Map<Player, Long> cooldowns = new HashMap<Player, Long>();
 
 	private Map<String, List<Particle.DustOptions>> particleDust = new HashMap<>();
 
-//	List<String> deathMessages1 = Arrays.asList("§f%s died to %s. ", "§f%s was destroyed by %s! ",
-//			"§f%s was killed by %s! ", "§f%s was obliterated by %s! ", "§f%s has fallen to %s. ", "§f%s gibbed %s. ");
-//	List<String> deathMessages2 = Arrays.asList("Perhaps they should stick to building.", "Aim diff.", "Sit.",
-//			"Clearly they struggle with clicking.", "Someone tell them to turn on their monitor.",
-//			"Are they even trying?", "Yikes.", "I think they might need glasses.", "Lmao.", "Hold that L.");
-
 	public PlayerInteract(GibCraft plugin) {
 		this.plugin = plugin;
 		this.am = plugin.getArenaManager();
 		this.gm = plugin.getGameManager();
-		particleDust.put("Red", new ArrayList<>(Arrays.asList(dustRed, dustDarkRed)));
-		particleDust.put("Blue", new ArrayList<>(Arrays.asList(dustAqua, dustTeal)));
-		particleDust.put("Yellow", new ArrayList<>(Arrays.asList(dustYellow, dustOrange)));
-		particleDust.put("Green", new ArrayList<>(Arrays.asList(dustLime, dustGreen)));
+		particleDust.put("Red Laser", new ArrayList<>(Arrays.asList(dustRed, dustDarkRed)));
+		particleDust.put("Blue Laser", new ArrayList<>(Arrays.asList(dustAqua, dustTeal)));
+		particleDust.put("Yellow Laser", new ArrayList<>(Arrays.asList(dustYellow, dustOrange)));
+		particleDust.put("Green Laser", new ArrayList<>(Arrays.asList(dustLime, dustGreen)));
 	}
 
 	@EventHandler
@@ -88,10 +78,10 @@ public class PlayerInteract implements Listener {
 				return;
 
 			if (!cooldowns.containsKey(p) || System.currentTimeMillis() >= cooldowns.get(p)) {
-				String killer = p.getName();
-				Stats damagerStats = plugin.playerStats.get(killer);
-				damagerStats.increaseShotsFired();
+				// Increase shots fired
+				Utils.addShotFired(p, plugin.playerStats);
 
+				// Put player on cooldown
 				if (GibCraft.playerPowerup.containsKey(p) && GibCraft.playerPowerup.get(p).getId() == 1) {
 					p.setCooldown(Material.IRON_HOE, 8);
 					cooldowns.put(p, System.currentTimeMillis() + 400);
@@ -99,56 +89,48 @@ public class PlayerInteract implements Listener {
 					p.setCooldown(Material.IRON_HOE, 16);
 					cooldowns.put(p, System.currentTimeMillis() + 800);
 				}
+
+				// Play shooting sound
 				p.getWorld().playSound(p.getLocation(), Sound.ENTITY_WITHER_SHOOT, .35f, 2f);
 //				p.getWorld().playSound(p.getLocation(), Sound.ENTITY_BLAZE_HURT, .5f, 2f);
 				p.getWorld().playSound(p.getLocation(), Sound.BLOCK_BEACON_DEACTIVATE, .35f, 2f);
+
+				// Get hit data
 				Location startLoc = p.getLocation().add(new Vector(0, 1.5, 0));
 				RayTraceResult result = Utils.getHitResult(startLoc, 100, p.getLocation().getWorld(), p);
-
 				Location hitLoc = null;
-				if (result != null) {
-					hitLoc = result.getHitPosition().clone().toLocation(startLoc.getWorld());
-				} else {
-					hitLoc = startLoc.clone().add(startLoc.clone().getDirection().multiply(50));
-				}
-				double interval = 1 / 3d;
-				double distance = hitLoc.distance(startLoc);
-				Vector difference = hitLoc.toVector().subtract(startLoc.toVector());
-				double points = Math.ceil(distance / interval);
-				difference.multiply(1d / points);
 
-				Location location = startLoc.clone().add(startLoc.clone().getDirection().multiply(0.5));
-				for (int i = 0; i <= points; i++) {
-					p.getWorld().spawnParticle(Particle.REDSTONE, location.clone(), 5, 0, 0, 0, 1,
-							particleDust.get(item.getItemMeta().getLore().get(1)).get(0));
-					p.getWorld().spawnParticle(Particle.REDSTONE, location.clone(), 5, 0, 0, 0, 1,
-							particleDust.get(item.getItemMeta().getLore().get(1)).get(1));
-					location.add(difference);
-				}
+				hitLoc = (result != null) ? (result.getHitPosition().clone().toLocation(startLoc.getWorld()))
+						: (startLoc.clone().add(startLoc.clone().getDirection().multiply(50)));
+
+				// Spawn particles from the player to the hit location
+				Utils.spawnParticlesBetweenLocations(startLoc, hitLoc, item, particleDust);
+
+				// Check if shooter hit a player
 				if (Utils.hitPlayer(p.getLocation().add(new Vector(0, 1.5, 0)), 100, p.getLocation().getWorld(), p)) {
-					damagerStats.increaseShotsHit();
+					// Increase shots hit
+					Utils.addShotHit(p, plugin.playerStats);
 
+					// Get player hit statistics
 					Player hit = (Player) result.getHitEntity();
-					Stats damagedStats = plugin.playerStats.get(hit.getName());
 
+					// Check if the shot was a headshot
 					Location hitPos = result.getHitPosition().toLocation(p.getWorld());
 					double eyeY = hit.getLocation().getY() + hit.getEyeHeight();
-
 					if (hitPos.getY() >= eyeY - 0.3) {
 						p.sendTitle("", "§4HEADSHOT", 2, 20, 2);
 						p.playSound(p.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 1f, 1f);
-						damagerStats.increaseHeadshots();
+						Utils.addHeadshot(p, plugin.playerStats);
 					}
 
+					// Spawn a firework where player got hit
 					Utils.spawnFireworks(hit.getLocation().clone().add(new Vector(0, 1.5, 0)), Color.WHITE);
 					p.getWorld().playSound(hit.getLocation(), Sound.ENTITY_FIREWORK_ROCKET_LARGE_BLAST, 10f, 1f);
-					Random random = new Random();
 
+					Random random = new Random();
 					Arena arena = am.getPlayerArena(p);
 
-					System.out.println("deathMessages1: " + Arrays.deepToString(plugin.deathMessages1.toArray()));
-					System.out.println("deathMessages2: " + Arrays.deepToString(plugin.deathMessages2.toArray()));
-
+					// Send death message to all in game players
 					if (!plugin.deathMessages1.isEmpty() && !plugin.deathMessages2.isEmpty())
 						for (Player player : arena.getAllPlayers()) {
 							player.sendMessage(ChatColor.translateAlternateColorCodes('&',
@@ -159,27 +141,27 @@ public class PlayerInteract implements Listener {
 															? plugin.deathMessages2
 																	.get(random.nextInt(plugin.deathMessages2.size()))
 															: ""),
-											hit.getName(), killer)));
+											hit.getName(), p.getName())));
 						}
 
+					// Get arena score and increase shooter's score by 1
 					int score = arena.getScores().get(p);
 					arena.getScores().put(p, ++score);
 
-					damagedStats.increaseDeaths();
-					damagerStats.increaseKills();
+					Utils.addFrag(p, plugin.playerStats);
 					p.playSound(p.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1f, 1f);
-					plugin.playerStats.put(hit.getName(), damagedStats);
-					plugin.playerStats.put(killer, damagerStats);
+
+					// Check if it was last kill needed to end game
 					if (arena.getScores().get(p) >= am.maxFrags)
 						am.arenaTimer.put(arena, 0);
 
+					// Change player gamemode to spectator instead of actually killing them
 					hit.setGameMode(GameMode.SPECTATOR);
-					hit.sendTitle("", "§eRespawning in §6" + gm.respawnTime + " §eseconds.", 2, 20, 2);
-					Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, () -> {
-						if (arena.getStatus() == Status.ONGOING)
-							gm.respawnPlayer(hit, am.getPlayerArena(hit));
-					}, gm.respawnTime * 20);
+
+					gm.respawnPlayer(hit, am.getPlayerArena(hit));
 				} else {
+
+					// If shot hit a block instead of a player, push back the players nearby
 					for (Entity e : hitLoc.getWorld().getNearbyEntities(hitLoc, 2, 2, 2)) {
 						if (!(e instanceof Player))
 							continue;
@@ -187,6 +169,7 @@ public class PlayerInteract implements Listener {
 						gm.knockedBy.put((Player) e, p);
 
 						Vector dir;
+						Vector difference = hitLoc.toVector().subtract(startLoc.toVector());
 						if (e.getLocation().distance(hitLoc) != 0)
 							dir = e.getLocation().subtract(hitLoc).toVector().normalize().multiply(2);
 						else
@@ -198,6 +181,7 @@ public class PlayerInteract implements Listener {
 							e.setVelocity(new Vector(dir.getX(), 1.5, dir.getZ()));
 						}
 					}
+
 				}
 			}
 		}

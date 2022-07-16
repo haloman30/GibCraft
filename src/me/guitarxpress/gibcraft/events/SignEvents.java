@@ -20,6 +20,7 @@ import me.guitarxpress.gibcraft.Commands;
 import me.guitarxpress.gibcraft.GibCraft;
 import me.guitarxpress.gibcraft.enums.Status;
 import me.guitarxpress.gibcraft.managers.ArenaManager;
+import me.guitarxpress.gibcraft.utils.Utils;
 
 public class SignEvents implements Listener {
 
@@ -46,6 +47,7 @@ public class SignEvents implements Listener {
 						return;
 					}
 				}
+
 				String aName = event.getLine(1);
 
 				if (am.exists(aName)) {
@@ -103,12 +105,8 @@ public class SignEvents implements Listener {
 					return;
 				}
 			}
-
-			String s = sign.getLine(1);
-			if (s.length() > 2) {
-				s = s.substring(2, s.length()); // Remove "§b" from the line in order to get track name
-			}
-
+			
+			String s = Utils.getNameFromString(sign.getLine(1));
 			if (am.exists(s)) {
 				Arena arena = am.getArena(s);
 				if (arena.getStatus() == Status.JOINABLE || arena.getStatus() == Status.STARTING) {
@@ -151,6 +149,9 @@ public class SignEvents implements Listener {
 			break;
 		case UNAVAILABLE:
 			sign.setLine(3, "§cUNAVAILABLE");
+			break;
+		case STARTUP:
+			sign.setLine(3, "§6STARTUP");
 			break;
 		default:
 			sign.setLine(3, "§cCONTACT ADMIN");

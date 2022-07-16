@@ -27,7 +27,7 @@ public class Arena {
 
 	private Map<Player, Integer> scores;
 
-	private List<Player> inArena;
+	private List<Player> allPlayers;
 
 	private List<ArmorStand> powerups;
 
@@ -39,7 +39,7 @@ public class Arena {
 		this.spectators = new ArrayList<>();
 		this.boundaries = new Location[2];
 		this.scores = new HashMap<>();
-		this.inArena = new ArrayList<>();
+		this.allPlayers = new ArrayList<>();
 		this.powerups = new ArrayList<>();
 	}
 
@@ -103,15 +103,15 @@ public class Arena {
 	}
 
 	public void addToArena(Player player) {
-		inArena.add(player);
+		allPlayers.add(player);
 	}
 
 	public void removeFromArena(Player player) {
-		inArena.remove(player);
+		allPlayers.remove(player);
 	}
 
 	public List<Player> getAllPlayers() {
-		return inArena;
+		return allPlayers;
 	}
 
 	public Location[] getBoundaries() {
@@ -194,7 +194,7 @@ public class Arena {
 	}
 
 	/*
-	 * @return random spawn if any was found. Null otherwise.
+	 * @return random spawn if any was found. Null otherwise. Should never return null as long as the arena is built correctly.
 	 */
 	public Location selectRandomSpawn() {
 		World w = boundaries[0].getWorld();

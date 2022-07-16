@@ -70,7 +70,6 @@ public class ItemManager {
 		item.setItemMeta(meta);
 		List<String> lore = new ArrayList<>();
 		lore.add("Red Laser");
-		lore.add("Red");
 		meta.setLore(lore);
 		item.setItemMeta(meta);
 		gunRed = item;
@@ -85,7 +84,6 @@ public class ItemManager {
 		item.setItemMeta(meta);
 		List<String> lore = new ArrayList<>();
 		lore.add("Blue Laser");
-		lore.add("Blue");
 		meta.setLore(lore);
 		item.setItemMeta(meta);
 		gunBlue = item;
@@ -100,7 +98,6 @@ public class ItemManager {
 		item.setItemMeta(meta);
 		List<String> lore = new ArrayList<>();
 		lore.add("Yellow Laser");
-		lore.add("Yellow");
 		meta.setLore(lore);
 		item.setItemMeta(meta);
 		gunYellow = item;
@@ -115,7 +112,6 @@ public class ItemManager {
 		item.setItemMeta(meta);
 		List<String> lore = new ArrayList<>();
 		lore.add("Green Laser");
-		lore.add("Green");
 		meta.setLore(lore);
 		item.setItemMeta(meta);
 		gunGreen = item;

@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Sound;
@@ -40,12 +39,13 @@ public class ArenaManager {
 	public List<String> arenaNames;
 	private Location lobby;
 	private Map<Player, Arena> playerInArena;
-	public Map<Arena, Integer> arenaCountdownTimer = new HashMap<>();
+	private Map<Arena, Integer> arenaCountdownTimer = new HashMap<>();
 	public Map<Arena, Integer> arenaTimer = new HashMap<>();
 	public int gameTime; // Time in seconds
 	public int maxFrags;
 	public int timeToStart;
 	private GameManager gm;
+	
 	private Map<Player, ItemStack[]> oldInventory = new HashMap<>();
 	private Map<Player, Float> oldExp = new HashMap<>();
 	private Map<Player, GameMode> oldMode = new HashMap<>();
@@ -87,11 +87,11 @@ public class ArenaManager {
 	}
 
 	public Arena getPlayerArena(Player player) {
-		return playerInArena.containsKey(player) ? playerInArena.get(player) : null;
+		return isPlayerInArena(player) ? playerInArena.get(player) : null;
 	}
 
 	public boolean isPlayerInArena(Player player) {
-		return playerInArena.containsKey(player) ? true : false;
+		return playerInArena.containsKey(player);
 	}
 
 	public void addPlayerToArena(Player player, Arena arena) {
@@ -104,17 +104,13 @@ public class ArenaManager {
 		arena.addScore(player, 0);
 		playerInArena.put(player, arena);
 
-		for (Player p : arena.getAllPlayers()) {
+		for (Player p : arena.getAllPlayers())
 			p.sendMessage(Commands.prefix() + "§6" + player.getName() + "§e joined the game. (§b"
 					+ arena.getPlayerCount() + "§e/" + "§b" + arena.getMode().maxPlayers() + "§e)");
-		}
 
-		if (arena.getPlayerCount() >= arena.getMode().minPlayers()) {
-			if (arena.getStatus() != Status.STARTING) {
-				arena.setStatus(Status.STARTING);
+		if (arena.getPlayerCount() >= arena.getMode().minPlayers())
+			if (arena.getStatus() != Status.STARTING)
 				startTimer(arena);
-			}
-		}
 
 		if (lobby != null && player.getLocation().distance(lobby) > 20)
 			toLobby(player);
@@ -131,29 +127,9 @@ public class ArenaManager {
 		player.setScoreboard(Bukkit.getScoreboardManager().getNewScoreboard());
 
 		if (arena.getStatus() == Status.ONGOING) {
-			Stats stats = plugin.playerStats.get(player.getName());
-			stats.increaseLosses();
-			plugin.playerStats.put(player.getName(), stats);
-
+			Utils.addLoss(player, plugin.playerStats);
 			if (arena.getPlayerCount() < arena.getMode().minPlayers()) {
-				for (Player p : arena.getAllPlayers()) {
-					if (arena.getMode() == Mode.FFA) {
-						p.sendMessage(Commands.prefix() + "§eEveryone left, you won!");
-					} else {
-						p.sendMessage(Commands.prefix() + "§eNot enough players. Game has been cancelled");
-					}
-				}
-				player.getInventory().setContents(oldInventory.get(player));
-				oldInventory.remove(player);
-				player.setLevel(oldLevel.get(player));
-				oldLevel.remove(player);
-				player.setGameMode(oldMode.get(player));
-				oldMode.remove(player);
-				player.setExp(oldExp.get(player));
-				oldExp.remove(player);
-				cancel(arena);
-				toLobby(player);
-				return;
+				end(arena);
 			}
 		}
 
@@ -163,32 +139,31 @@ public class ArenaManager {
 			}
 		}
 
-		if (oldInventory.containsKey(player)) {
-			player.getInventory().setContents(oldInventory.get(player));
-			oldInventory.remove(player);
-		}
+		player.getInventory().setContents(oldInventory.get(player));
+		oldInventory.remove(player);
+		player.setLevel(oldLevel.get(player));
+		oldLevel.remove(player);
+		player.setGameMode(oldMode.get(player));
+		oldMode.remove(player);
+		player.setExp(oldExp.get(player));
+		oldExp.remove(player);
 
-		if (oldMode.containsKey(player)) {
-			player.setGameMode(oldMode.get(player));
-			oldMode.remove(player);
-		}
-
-		if (oldLevel.containsKey(player)) {
-			player.setLevel(oldLevel.get(player));
-			oldLevel.remove(player);
-		}
-
-		toLobby(player);
+		if (lobby != null && player.getLocation().distance(lobby) > 20)
+			toLobby(player);
 	}
 
 	public void addSpectatorToArena(Player player, Arena arena) {
 		arena.addSpectator(player);
+		arena.addToArena(player);
 		playerInArena.put(player, arena);
 		createScoreboard(player);
-		for (Player p : arena.getAllPlayers()) {
+
+		for (Player p : arena.getAllPlayers())
 			p.sendMessage(Commands.prefix() + player.getName() + " §eis spectating.");
-		}
+
+		oldMode.put(player, player.getGameMode());
 		player.setGameMode(GameMode.SPECTATOR);
+
 		player.teleport(arena.getPlayers().get(0));
 	}
 
@@ -196,25 +171,24 @@ public class ArenaManager {
 		arena.removeFromArena(player);
 		arena.removeSpectator(player);
 		playerInArena.remove(player);
-
 		player.setScoreboard(Bukkit.getScoreboardManager().getNewScoreboard());
 
-		for (Player p : arena.getAllPlayers()) {
+		for (Player p : arena.getAllPlayers())
 			p.sendMessage(Commands.prefix() + player.getName() + " §eis no longer spectating.");
-		}
 
-		if (oldMode.containsKey(player)) {
-			player.setGameMode(oldMode.get(player));
-			oldMode.remove(player);
-		}
+		player.setGameMode(oldMode.get(player));
+		oldMode.remove(player);
+
 		toLobby(player);
 	}
 
+	/*
+	 * @return true if player is spectating.
+	 */
 	public boolean isSpectating(Player player) {
 		for (Arena arena : arenas)
-			for (Player p : arena.getSpectators())
-				if (p.getName().equalsIgnoreCase(player.getName()))
-					return true;
+			if (arena.getSpectators().contains(player))
+				return true;
 		return false;
 	}
 
@@ -228,16 +202,23 @@ public class ArenaManager {
 		plugin.saveArena(a);
 	}
 
-	public void createArena(String name, Mode mode) {
+	/*
+	 * @return true if arena was created.
+	 */
+	public boolean createArena(String name, Mode mode) {
+		if (exists(name))
+			return false;
+
 		Arena arena = new Arena(name, Status.SETTING_UP, mode);
 		arenas.add(arena);
 		arenaNames.add(name);
 		arenaTimer.put(arena, gameTime);
 		plugin.saveArena(arena);
+		return true;
 	}
 
 	/*
-	 * @return true if removed, false if it doesn't exist
+	 * @return true if arena was removed.
 	 */
 	public boolean removeArena(String arena) {
 		if (!exists(arena))
@@ -252,8 +233,6 @@ public class ArenaManager {
 	}
 
 	/*
-	 * @param arena name
-	 * 
 	 * @return arena if exists, null if otherwise
 	 */
 	public Arena getArena(String name) {
@@ -264,8 +243,6 @@ public class ArenaManager {
 	}
 
 	/*
-	 * @param arena name
-	 * 
 	 * @return true if exists
 	 */
 	public boolean exists(String arena) {
@@ -275,44 +252,47 @@ public class ArenaManager {
 		return false;
 	}
 
-	/*
-	 * @return true if arena started
-	 */
-	public boolean start(Arena arena) {
+	public void start(Arena arena) {
 		int i = 0;
 		for (Player p : arena.getPlayers()) {
-			p.teleport(arena.selectRandomSpawn());
 			oldInventory.put(p, p.getInventory().getContents());
-			p.getInventory().clear();
-			p.getInventory().addItem(ItemManager.guns[i++]);
-			Stats stats = plugin.playerStats.get(p.getName());
-			stats.increaseGamesPlayed();
-			plugin.playerStats.put(p.getName(), stats);
-			p.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 10000 * 20, 0, true, false));
-			p.addPotionEffect(new PotionEffect(PotionEffectType.JUMP, 10000 * 20, 0, true, false));
-			p.setHealth(20);
-			p.setFoodLevel(20);
 			oldMode.put(p, p.getGameMode());
 			oldExp.put(p, p.getExp());
 			oldLevel.put(p, p.getLevel());
+
+			p.getInventory().clear();
+			p.getInventory().addItem(ItemManager.guns[i++]);
+			p.setHealth(20);
+			p.setFoodLevel(20);
 			p.setLevel(0);
 			p.setExp(0);
 			p.setGameMode(GameMode.ADVENTURE);
+
+			p.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 10000 * 20, 0, true, false));
+			p.addPotionEffect(new PotionEffect(PotionEffectType.JUMP, 10000 * 20, 0, true, false));
+
+			Utils.addGamePlayed(p, plugin.playerStats);
+
 			createScoreboard(p);
+
+			p.teleport(arena.selectRandomSpawn());
 		}
 
 		arenaTimer.put(arena, gameTime);
 
 		gm.start(arena);
-		return true;
 	}
 
 	public void startTimer(Arena arena) {
+		arena.setStatus(Status.STARTING);
+
 		if (arena.getPlayerCount() < arena.getMode().maxPlayers())
 			Bukkit.broadcastMessage(Commands.prefix() + "§eArena §6" + arena.getName() + " §eis starting in §6"
 					+ timeToStart + "§e seconds. Join now!");
+
 		arenaCountdownTimer.put(arena, timeToStart);
 		new RepeatingTask(plugin, 0, 1 * 20) {
+
 			@Override
 			public void run() {
 				int time = arenaCountdownTimer.get(arena);
@@ -324,100 +304,69 @@ public class ArenaManager {
 				} else if (time <= 0 && arena.getPlayerCount() >= arena.getMode().minPlayers()) {
 					start(arena);
 					cancel();
-				} else if (arena.getPlayerCount() < arena.getMode().minPlayers()) {
+				}
+
+				if (arena.getPlayerCount() < arena.getMode().minPlayers()) {
 					cancel();
 					arena.setStatus(Status.CANCELLED);
 					Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, () -> {
 						arena.setStatus(Status.JOINABLE);
 					}, 1 * 20);
 				}
+
 				arenaCountdownTimer.put(arena, time - 1);
 			}
+
 		};
 	}
 
-	/*
-	 * @return true if ended. False if arena doesn't exist or hasn't started.
-	 */
-	public boolean end(Arena arena) {
+	public void end(Arena arena) {
 		arena.setStatus(Status.ENDED);
-		List<Player> scoreboard = Utils.getSortedPlayers(arena);
-		Player winner = scoreboard.get(0);
+		
+		if (arena.getPlayerCount() != 0) {
+			List<Player> scoreboard = Utils.getSortedPlayers(arena);
+			Player winner = scoreboard.get(0);
 
-		List<Player> toRemove = new ArrayList<>();
+			List<Player> toRemove = new ArrayList<>();
 
-		for (Player p : arena.getAllPlayers()) {
-			Stats stats = plugin.playerStats.get(p.getName());
+			for (Player p : arena.getAllPlayers()) {
 
-			if (p.getName().equals(winner.getName()))
-				stats.increaseWins();
-			else if (!arena.getSpectators().contains(p))
-				stats.increaseLosses();
+				if (p.getName().equals(winner.getName()))
+					Utils.addWin(p, plugin.playerStats);
+				else if (!arena.getSpectators().contains(p))
+					Utils.addLoss(p, plugin.playerStats);
 
-			plugin.playerStats.put(p.getName(), stats);
+				p.sendMessage(Commands.prefix() + "§6" + winner.getName() + " §ewon with §6" + arena.getScores().get(winner)
+						+ " §ekills!");
+				
+				for (int j = 2; j <= arena.getPlayerCount(); j++) {
+					p.sendMessage(Commands.prefix() + "§e" + j + ". §6" + scoreboard.get(j - 1).getName() + " §e- " + "§6"
+							+ arena.getScores().get(scoreboard.get(j - 1)));
+				}
 
-			p.sendMessage(Commands.prefix() + "§6" + winner.getName() + " §ewon with §6" + arena.getScores().get(winner)
-					+ " §ekills!");
-			for (int j = 2; j <= arena.getPlayerCount(); j++) {
-				p.sendMessage(Commands.prefix() + "§e" + j + ". §6" + scoreboard.get(j - 1).getName() + " §e- " + "§6"
-						+ arena.getScores().get(scoreboard.get(j - 1)));
+				p.playSound(p.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1f, 2f);
+
+				p.setScoreboard(Bukkit.getScoreboardManager().getNewScoreboard());
+
+				toRemove.add(p);
+				plugin.savePlayer(p.getName());
 			}
 
-			p.setExp(oldExp.get(p));
-			oldExp.remove(p);
-
-			p.playSound(p.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1f, 2f);
-
-			p.setScoreboard(Bukkit.getScoreboardManager().getNewScoreboard());
-
-			toRemove.add(p);
-			plugin.savePlayer(p.getName());
+			for (Player player : toRemove) {
+				if (isSpectating(player))
+					removeSpectatorFromArena(player, arena);
+				else
+					removePlayerFromArena(player, arena);
+			}
+			
+			toRemove.clear();
 		}
-
-		for (Player player : toRemove) {
-			if (isSpectating(player))
-				removeSpectatorFromArena(player, arena);
-			else
-				removePlayerFromArena(player, arena);
-		}
-
-		toRemove.clear();
+		
 		arena.removeAllPowerups();
 		arena.getAllPlayers().clear();
 		arena.getPlayers().clear();
 		arena.getSpectators().clear();
 		arena.clearScores();
-
-		Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, () -> {
-			arena.setStatus(Status.JOINABLE);
-		}, 2 * 20);
-
-		return true;
-	}
-
-	public void cancel(Arena arena) {
-		for (Player p : arena.getAllPlayers()) {
-			Stats stats = plugin.playerStats.get(p.getName());
-			if (arena.getMode() == Mode.FFA) {
-				stats.increaseWins();
-			} else {
-				stats.decreaseGamesPlayed();
-			}
-			plugin.playerStats.put(p.getName(), stats);
-
-			if (oldInventory.containsKey(p)) {
-				p.getInventory().setContents(oldInventory.get(p));
-				oldInventory.remove(p);
-			}
-			toLobby(p);
-		}
-
-		arena.removeAllPowerups();
-		arena.clearScores();
-		arena.getAllPlayers().clear();
-		arena.getPlayers().clear();
-		arena.getSpectators().clear();
-		arena.setStatus(Status.CANCELLED);
 
 		Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, () -> {
 			arena.setStatus(Status.JOINABLE);
@@ -430,53 +379,36 @@ public class ArenaManager {
 		Scoreboard board = manager.getNewScoreboard();
 		Objective obj = board.registerNewObjective("Scoreboard", "dummy", "§6Time Left: §e" + arenaTimer.get(arena));
 		obj.setDisplaySlot(DisplaySlot.SIDEBAR);
-		
+
 		Team fragLimit = board.registerNewTeam("fragLimit");
 		fragLimit.addEntry("§6Frag Limit: ");
 		Score score = obj.getScore("§6Frag Limit: ");
 		score.setScore(maxFrags);
 
-		int playerCount = arena.getPlayerCount();
-		for (int i = playerCount - 1; i >= 0; i--) {
-			String t = "";
-			ChatColor color = null;
-			switch (i) {
-			case 0:
-				t = "Red";
-				color = ChatColor.DARK_RED;
-				break;
-			case 1:
-				t = "Blue";
-				color = ChatColor.BLUE;
-				break;
-			case 2:
-				t = "Yellow";
-				color = ChatColor.YELLOW;
-				break;
-			case 3:
-				t = "Green";
-				color = ChatColor.GREEN;
-				break;
-			}
-			Team team = board.registerNewTeam(t);
-			team.setColor(color);
+		for (int i = arena.getPlayerCount() - 1; i >= 0; i--) {
+			Team team = board.registerNewTeam(Utils.intToColorString(i));
+			team.setColor(Utils.intToColor(i));
 			team.addEntry(p.getName());
 			score = obj.getScore(p.getName());
 			score.setScore(arena.getScores().get(arena.getPlayers().get(i)));
 		}
+		
 		p.setScoreboard(board);
 	}
 
 	public void createStatsBoard(Player p) {
-		DecimalFormat df = new DecimalFormat(" #,##0.00");
-		ScoreboardManager manager = Bukkit.getScoreboardManager();
-		Scoreboard board = manager.getNewScoreboard();
-		Objective obj = board.registerNewObjective("Statsboard", "dummy", "§4" + p.getName());
-		obj.setDisplaySlot(DisplaySlot.SIDEBAR);
 		if (!plugin.playerStats.containsKey(p.getName())) {
 			p.sendMessage(Commands.prefix() + "§cYou haven't played a game yet.");
 			return;
 		}
+		
+		DecimalFormat df = new DecimalFormat(" #,##0.00");
+		
+		ScoreboardManager manager = Bukkit.getScoreboardManager();
+		Scoreboard board = manager.getNewScoreboard();
+		Objective obj = board.registerNewObjective("Statsboard", "dummy", "§4" + p.getName());
+		obj.setDisplaySlot(DisplaySlot.SIDEBAR);
+		
 		Stats stats = plugin.playerStats.get(p.getName());
 		Score score = obj.getScore("§6Kills: §e" + stats.getKills());
 		score.setScore(11);

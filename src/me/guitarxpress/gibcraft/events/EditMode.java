@@ -21,14 +21,11 @@ import me.guitarxpress.gibcraft.managers.ItemManager;
 
 public class EditMode implements Listener {
 
-	@SuppressWarnings("unused")
-	private GibCraft plugin;
 	private ArenaManager am;
 
 	public static Map<Player, ItemStack[]> oldInventory = new HashMap<Player, ItemStack[]>();
 
 	public EditMode(GibCraft plugin) {
-		this.plugin = plugin;
 		this.am = plugin.getArenaManager();
 	}
 
