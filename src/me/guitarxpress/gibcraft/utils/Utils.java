@@ -6,7 +6,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Color;
 import org.bukkit.FireworkEffect;
@@ -96,36 +95,31 @@ public class Utils {
 		return false;
 	}
 
-	public static List<Player> getSortedPlayers(Arena arena) {
-		Map<String, Integer> leaderboard = getSortedLeaderboard(arena);
-		List<Player> sortedPlayers = new ArrayList<>();
-		for (Map.Entry<String, Integer> entry : leaderboard.entrySet()) {
-			sortedPlayers.add(Bukkit.getPlayer(entry.getKey()));
-		}
-		return sortedPlayers;
-	}
-
-	public static Map<String, Integer> getSortedLeaderboard(Arena arena) {
+	public static List<Integer> getSortedPointsLeaderboard(Arena arena) {
 		List<Integer> scores = new ArrayList<>();
+		List<String> players = new ArrayList<>();
+
 		Map<Integer, String> pScores = new HashMap<>();
 
 		for (Player p : arena.getPlayers()) {
 			pScores.put(arena.getScores().get(p), p.getName());
 			scores.add(arena.getScores().get(p));
+			players.add(p.getName());
 		}
 
-		Collections.sort(scores);
-
-		Map<String, Integer> sortedLeaderboard = new HashMap<>();
-
-		for (Map.Entry<Integer, String> score : pScores.entrySet()) {
-			sortedLeaderboard.put(score.getValue(), score.getKey());
-		}
-		return sortedLeaderboard;
+		Collections.sort(scores, Collections.reverseOrder());
+		return scores;
 	}
 
-	public static Player getWinner(Arena arena) {
-		return getSortedPlayers(arena).get(0);
+	public static List<Player> getSortedPlayerLeaderboard(Arena arena, List<Integer> scores) {
+		List<Player> sortedPlayers = new ArrayList<>();
+
+		for (Integer score : scores)
+			for (Player player : arena.getPlayers())
+				if (arena.getScores().get(player) == score)
+					sortedPlayers.add(player);
+
+		return sortedPlayers;
 	}
 
 	public static void spawnParticlesBetweenLocations(Location start, Location end, ItemStack item,
@@ -137,9 +131,9 @@ public class Utils {
 		difference.multiply(1d / points);
 		Location location = start.clone().add(start.clone().getDirection().multiply(0.5));
 		for (int i = 0; i <= points; i++) {
-			start.getWorld().spawnParticle(Particle.REDSTONE, location.clone(), 5, 0, 0, 0, 1,
+			start.getWorld().spawnParticle(Particle.REDSTONE, location.clone(), 2, 0, 0, 0, 1,
 					particleDustMap.get(item.getItemMeta().getLore().get(0)).get(0));
-			start.getWorld().spawnParticle(Particle.REDSTONE, location.clone(), 5, 0, 0, 0, 1,
+			start.getWorld().spawnParticle(Particle.REDSTONE, location.clone(), 2, 0, 0, 0, 1,
 					particleDustMap.get(item.getItemMeta().getLore().get(0)).get(1));
 			location.add(difference);
 		}
@@ -182,6 +176,20 @@ public class Utils {
 			return "Yellow";
 		case 3:
 			return "Green";
+		}
+		return "";
+	}
+
+	public static String intToColorCode(int i) {
+		switch (i) {
+		case 0:
+			return "§4";
+		case 1:
+			return "§3";
+		case 2:
+			return "§e";
+		case 3:
+			return "§a";
 		}
 		return "";
 	}

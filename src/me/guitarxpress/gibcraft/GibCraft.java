@@ -338,9 +338,6 @@ public class GibCraft extends JavaPlugin {
 							as.getWorld().spawnParticle(Particle.REDSTONE,
 									as.getLocation().add(new Location(as.getWorld(), 0, 1.8, 0)).clone(), 2, .5, .5, .5,
 									1, new Particle.DustOptions(Color.YELLOW, (float) 1.0));
-							as.getWorld().spawnParticle(Particle.END_ROD,
-									as.getLocation().add(new Location(as.getWorld(), 0, 1.8, 0)).clone(), 0, .5, .5, .5,
-									1);
 						}
 					}
 					asRotation++;

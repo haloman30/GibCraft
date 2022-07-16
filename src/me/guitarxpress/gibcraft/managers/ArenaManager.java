@@ -45,7 +45,7 @@ public class ArenaManager {
 	public int maxFrags;
 	public int timeToStart;
 	private GameManager gm;
-	
+
 	private Map<Player, ItemStack[]> oldInventory = new HashMap<>();
 	private Map<Player, Float> oldExp = new HashMap<>();
 	private Map<Player, GameMode> oldMode = new HashMap<>();
@@ -139,14 +139,16 @@ public class ArenaManager {
 			}
 		}
 
-		player.getInventory().setContents(oldInventory.get(player));
-		oldInventory.remove(player);
-		player.setLevel(oldLevel.get(player));
-		oldLevel.remove(player);
-		player.setGameMode(oldMode.get(player));
-		oldMode.remove(player);
-		player.setExp(oldExp.get(player));
-		oldExp.remove(player);
+		if (oldInventory.containsKey(player)) {
+			player.getInventory().setContents(oldInventory.get(player));
+			oldInventory.remove(player);
+			player.setLevel(oldLevel.get(player));
+			oldLevel.remove(player);
+			player.setGameMode(oldMode.get(player));
+			oldMode.remove(player);
+			player.setExp(oldExp.get(player));
+			oldExp.remove(player);
+		}
 
 		if (lobby != null && player.getLocation().distance(lobby) > 20)
 			toLobby(player);
@@ -322,10 +324,11 @@ public class ArenaManager {
 
 	public void end(Arena arena) {
 		arena.setStatus(Status.ENDED);
-		
+
 		if (arena.getPlayerCount() != 0) {
-			List<Player> scoreboard = Utils.getSortedPlayers(arena);
-			Player winner = scoreboard.get(0);
+			List<Integer> scores = Utils.getSortedPointsLeaderboard(arena);
+			List<Player> players = Utils.getSortedPlayerLeaderboard(arena, scores);
+			Player winner = players.get(0);
 
 			List<Player> toRemove = new ArrayList<>();
 
@@ -336,15 +339,13 @@ public class ArenaManager {
 				else if (!arena.getSpectators().contains(p))
 					Utils.addLoss(p, plugin.playerStats);
 
-				p.sendMessage(Commands.prefix() + "§6" + winner.getName() + " §ewon with §6" + arena.getScores().get(winner)
-						+ " §ekills!");
-				
-				for (int j = 2; j <= arena.getPlayerCount(); j++) {
-					p.sendMessage(Commands.prefix() + "§e" + j + ". §6" + scoreboard.get(j - 1).getName() + " §e- " + "§6"
-							+ arena.getScores().get(scoreboard.get(j - 1)));
-				}
+				p.sendMessage(Commands.prefix() + "§6" + winner.getName() + " §ewon with §6"
+						+ arena.getScores().get(winner) + " §ekills!");
 
-				p.playSound(p.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1f, 2f);
+				for (int j = 2; j <= arena.getPlayerCount(); j++) {
+					p.sendMessage(Commands.prefix() + "§e" + j + ". §6" + players.get(j - 1).getName() + " §e- " + "§6"
+							+ arena.getScores().get(players.get(j - 1)));
+				}
 
 				p.setScoreboard(Bukkit.getScoreboardManager().getNewScoreboard());
 
@@ -357,11 +358,13 @@ public class ArenaManager {
 					removeSpectatorFromArena(player, arena);
 				else
 					removePlayerFromArena(player, arena);
+				player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1f, 2f);
+				createScoreboard(player);
 			}
-			
+
 			toRemove.clear();
 		}
-		
+
 		arena.removeAllPowerups();
 		arena.getAllPlayers().clear();
 		arena.getPlayers().clear();
@@ -385,14 +388,11 @@ public class ArenaManager {
 		Score score = obj.getScore("§6Frag Limit: ");
 		score.setScore(maxFrags);
 
-		for (int i = arena.getPlayerCount() - 1; i >= 0; i--) {
-			Team team = board.registerNewTeam(Utils.intToColorString(i));
-			team.setColor(Utils.intToColor(i));
-			team.addEntry(p.getName());
-			score = obj.getScore(p.getName());
-			score.setScore(arena.getScores().get(arena.getPlayers().get(i)));
+		for (int i = 0; i < arena.getPlayerCount(); i++) {
+			Score sc = obj.getScore(Utils.intToColorCode(i) + arena.getPlayers().get(i).getName());
+			sc.setScore(arena.getScores().get(arena.getPlayers().get(i)));
 		}
-		
+
 		p.setScoreboard(board);
 	}
 
@@ -401,14 +401,14 @@ public class ArenaManager {
 			p.sendMessage(Commands.prefix() + "§cYou haven't played a game yet.");
 			return;
 		}
-		
+
 		DecimalFormat df = new DecimalFormat(" #,##0.00");
-		
+
 		ScoreboardManager manager = Bukkit.getScoreboardManager();
 		Scoreboard board = manager.getNewScoreboard();
 		Objective obj = board.registerNewObjective("Statsboard", "dummy", "§4" + p.getName());
 		obj.setDisplaySlot(DisplaySlot.SIDEBAR);
-		
+
 		Stats stats = plugin.playerStats.get(p.getName());
 		Score score = obj.getScore("§6Kills: §e" + stats.getKills());
 		score.setScore(11);

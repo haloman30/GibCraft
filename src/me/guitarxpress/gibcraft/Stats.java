@@ -158,7 +158,7 @@ public class Stats {
 	}
 
 	public double getAccuracy() {
-		return shotsFired == 0 ? 0 : ((double) shotsHit / (double) shotsFired);
+		return shotsFired == 0 ? 0 : (((double) shotsHit / (double) shotsFired) * 100);
 	}
 
 	public int getHeadshots() {
@@ -174,7 +174,7 @@ public class Stats {
 	}
 	
 	public double getHeadshotPercentage() {
-		return shotsHit == 0 ? 0 : ((double) headshots / (double) shotsHit);
+		return shotsHit == 0 ? 0 : (((double) headshots / (double) shotsHit) * 100);
 	}
 
 }

@@ -20,7 +20,7 @@ public enum Mode {
 		case DUOS:
 			return 4;
 		case FFA:
-			return 1;
+			return 2;
 		default:
 			return 0;
 		}

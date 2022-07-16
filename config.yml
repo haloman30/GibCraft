@@ -16,7 +16,7 @@ deathMessages1:
    - "&f%s was killed by %s!"
    - "&f%s was obliterated by %s!"
    - "&f%s has fallen to %s."
-   - "&f%s gibbed %s."
+   - "&f%s was gibbed by %s."
 deathMessages2:
    - "Perhaps they should stick to building."
    - "Aim diff."

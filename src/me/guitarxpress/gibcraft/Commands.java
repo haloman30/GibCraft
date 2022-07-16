@@ -1,9 +1,6 @@
 package me.guitarxpress.gibcraft;
 
 import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.Particle;
-import org.bukkit.Sound;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -12,8 +9,6 @@ import org.bukkit.entity.Player;
 import me.guitarxpress.gibcraft.enums.Mode;
 import me.guitarxpress.gibcraft.enums.Status;
 import me.guitarxpress.gibcraft.managers.ArenaManager;
-import me.guitarxpress.gibcraft.managers.ItemManager;
-import me.guitarxpress.gibcraft.utils.RepeatingTask;
 
 public class Commands implements CommandExecutor {
 
@@ -77,37 +72,6 @@ public class Commands implements CommandExecutor {
 						for (Arena arena : am.arenas) {
 							p.sendMessage(" §e- §6" + arena.getName() + "§e - " + arena.getStatus().display());
 						}
-					}
-				} else if (args[0].equalsIgnoreCase("gun")) {
-					if (p.hasPermission(cmd + ".admin")) {
-						p.getInventory().addItem(ItemManager.gunRed);
-					}
-				} else if (args[0].equalsIgnoreCase("p")) {
-					if (p.hasPermission(cmd + ".admin")) {
-						p.playSound(p.getLocation(), Sound.BLOCK_BEACON_DEACTIVATE, 1f, 2f);
-						Location loc = p.getLocation().clone();
-						new RepeatingTask(plugin, 0, 1) {
-							double phi = 0;
-
-							@Override
-							public void run() {
-								phi += Math.PI / 10;
-								for (double theta = 0; theta <= 2 * Math.PI; theta += Math.PI / 10) {
-									double r = 1.5;
-									double x = r * Math.cos(theta) * Math.sin(phi);
-									double y = r * Math.cos(phi) + 1.5;
-									double z = r * Math.sin(theta) * Math.sin(phi);
-									loc.add(x, y, z);
-									p.spawnParticle(Particle.FIREWORKS_SPARK, loc, 0, 0, 0, 0, 1);
-									loc.subtract(x, y, z);
-								}
-								if (phi > Math.PI) {
-									cancel();
-								}
-							}
-
-						};
-
 					}
 				} else if (args[0].equalsIgnoreCase("create")) {
 					if (p.hasPermission(cmd + ".create")) {
