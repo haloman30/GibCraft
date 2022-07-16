@@ -1,0 +1,30 @@
+# Time limit for the game to end, in seconds
+gameTime: 300
+# Frag limit for the game to end
+maxFrags: 20
+# Time for the game to start after having the minimum amount of players
+timeToStart: 20
+# Respawn time after getting fragged
+respawnTime: 3
+# Messages that show when a player is fragged. The message selected is random and can be from either the first list only, or both.
+# Make sure to add a space at the end of the first message.
+# Feel free to use colours with &<colour id>.
+# The first %s represents the player that killed. The second %s represents the player that was killed.
+deathMessages1:
+   - "&f%s died to %s."
+   - "&f%s was destroyed by %s!"
+   - "&f%s was killed by %s!"
+   - "&f%s was obliterated by %s!"
+   - "&f%s has fallen to %s."
+   - "&f%s gibbed %s."
+deathMessages2:
+   - "Perhaps they should stick to building."
+   - "Aim diff."
+   - "Sit."
+   - "Clearly they struggle with clicking."
+   - "Someone tell them to turn on their monitor."
+   - "Are they even trying?"
+   - "Yikes."
+   - "I think they might need glasses."
+   - "Lmao."
+   - "Hold that L."
