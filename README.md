@@ -1,5 +1,7 @@
 # GibCraft
-GibCraft Minigame Plugin for Spigot/Paper 1.18/1.19 by GuitarXpress (HeyImJ0hn)
+GibCraft Minigame Plugin for Spigot/Paper 1.18/1.19 by GuitarXpress (HeyImJ0hn), inspired by Ratz InstaGib and Quake Live.
+
+**This plugin requires [ProtocolLib](https://www.spigotmc.org/resources/protocollib.1997/) **
 
 ## Commands:
 Command prefix is **/gibcraft** or **/gib**
