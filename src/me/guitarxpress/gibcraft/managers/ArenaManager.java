@@ -135,7 +135,6 @@ public class ArenaManager {
 
 		arena.addPlayer(player);
 		arena.addToArena(player);
-		arena.addScore(player, 0);
 		playerInArena.put(player, arena);
 
 		for (Player p : arena.getAllPlayers())
@@ -198,7 +197,10 @@ public class ArenaManager {
 		arena.addSpectator(player);
 		arena.addToArena(player);
 		playerInArena.put(player, arena);
-		createScoreboardFFA(player);
+		if (arena.getMode() == Mode.FFA)
+			createScoreboardFFA(player);
+		else
+			createScoreboardDuos(player);
 
 		for (Player p : arena.getAllPlayers())
 			p.sendMessage(Commands.prefix() + player.getName() + " §eis spectating.");
@@ -332,7 +334,10 @@ public class ArenaManager {
 
 			Utils.addGamePlayed(p, plugin.playerStats);
 
-			createScoreboardFFA(p);
+			if (arena.getMode() == Mode.FFA)
+				createScoreboardFFA(p);
+			else
+				createScoreboardDuos(p);
 
 			p.teleport(arena.selectRandomSpawn());
 		}
@@ -515,8 +520,8 @@ public class ArenaManager {
 
 		Score sc1 = obj.getScore("§4Red Team");
 		sc1.setScore(arena.getTeamScore("Red"));
-		Score sc2 = obj.getScore("§3Blue Team");
-		sc2.setScore(arena.getTeamScore("Blue"));
+//		Score sc2 = obj.getScore("§3Blue Team");
+//		sc2.setScore(arena.getTeamScore("Blue"));
 
 		p.setScoreboard(board);
 	}

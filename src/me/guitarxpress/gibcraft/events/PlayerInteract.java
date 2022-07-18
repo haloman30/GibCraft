@@ -179,7 +179,8 @@ public class PlayerInteract implements Listener {
 
 						Player ePlayer = (Player) e;
 
-						if (arena.getPlayerTeam(p) != null && arena.getPlayerTeam(ePlayer) == arena.getPlayerTeam(p))
+						if (arena.getPlayerTeam(p) != null && arena.getPlayerTeam(ePlayer) == arena.getPlayerTeam(p)
+								&& ePlayer.getName() != p.getName())
 							return;
 
 						gm.knockedBy.put((Player) e, p);

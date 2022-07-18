@@ -266,6 +266,10 @@ public class Arena {
 	public void setTeamScore(Map<String, Integer> teamScore) {
 		this.teamScore = teamScore;
 	}
+	
+	public int getTeamPlayerCount(String team) {
+		return teamExists(team) ? getTeamPlayers(team).size() : 0;
+	}
 
 	/*
 	 * @return random spawn if any was found. Null otherwise. Should never return null as long as the arena is built correctly.

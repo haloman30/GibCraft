@@ -1,11 +1,15 @@
 # Time limit for the game to end, in seconds
 gameTime: 300
+
 # Frag limit for the game to end
 maxFrags: 20
+
 # Time for the game to start after having the minimum amount of players
 timeToStart: 20
+
 # Respawn time after getting fragged
 respawnTime: 3
+
 # Messages that show when a player is fragged. The message selected is random and can be from either the first list only, or both.
 # Make sure to add a space at the end of the first message.
 # Feel free to use colours with &<colour id>.
@@ -29,12 +33,11 @@ deathMessages2:
    - "Lmao."
    - "Hold that L."
 
-
 ### SQL Connection ### Ignore if you do NOT have an SQL Server. ###   
 host: "localhost" # SQL Host IP
 port: "3306" # SQL Port
 database: "gibcraft" # Database where player stats will be stored. It is recommended that you create a new database for each plugin that uses SQL.
-username: "root" # SQL Username
+username: "" # SQL Username
 password: "" # SQL Password
 useSSL: false 
 # Plugin will ALWAYS save to the database IF it is connected. But will only save to local files IF you want it to OR SQL is NOT connected.

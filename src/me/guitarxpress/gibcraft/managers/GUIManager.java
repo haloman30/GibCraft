@@ -1,5 +1,8 @@
 package me.guitarxpress.gibcraft.managers;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -17,6 +20,8 @@ public class GUIManager implements Listener {
 	private GibCraft plugin;
 
 	private Inventory teamsGUI;
+	
+	private Map<Player, Inventory> pGui = new HashMap<>();
 
 	public GUIManager(GibCraft plugin) {
 		this.plugin = plugin;
@@ -41,7 +46,8 @@ public class GUIManager implements Listener {
 
 	public void openTeamsGUI(Player p, String arenaName) {
 		createTeamsGUI(arenaName);
-		p.openInventory(teamsGUI);
+		pGui.put(p, teamsGUI);
+		p.openInventory(pGui.get(p));
 	}
 
 	@EventHandler
@@ -51,7 +57,7 @@ public class GUIManager implements Listener {
 		if (event.getClickedInventory() == null)
 			return;
 
-		if (!event.getClickedInventory().equals(teamsGUI))
+		if (!event.getClickedInventory().equals(pGui.get(p)))
 			return;
 
 		event.setCancelled(true);
@@ -64,12 +70,12 @@ public class GUIManager implements Listener {
 			return;
 
 		if (item.equals(ItemManager.redTeam)) {
-			if (plugin.getArenaManager().getArena(arenaName).getTeamPlayers("Red").size() < 2)
+			if (plugin.getArenaManager().getArena(arenaName).getTeamPlayerCount("Red") < 2)
 				plugin.getArenaManager().addPlayerToArena(p, plugin.getArenaManager().getArena(arenaName), "Red");
 			else
 				p.sendMessage(Commands.prefix() + "§cThat team is full.");
 		} else if (item.equals(ItemManager.blueTeam)) {
-			if (plugin.getArenaManager().getArena(arenaName).getTeamPlayers("Red").size() < 2)
+			if (plugin.getArenaManager().getArena(arenaName).getTeamPlayerCount("Blue") < 2)
 				plugin.getArenaManager().addPlayerToArena(p, plugin.getArenaManager().getArena(arenaName), "Blue");
 			else
 				p.sendMessage(Commands.prefix() + "§cThat team is full.");

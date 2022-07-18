@@ -10,6 +10,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.Color;
 import org.bukkit.FireworkEffect;
 import org.bukkit.FluidCollisionMode;
+import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Particle;
 import org.bukkit.World;
@@ -51,8 +52,8 @@ public class Utils {
 
 	public static boolean hitPlayer(Location start, double maxDistance, World world, Player p) {
 		RayTraceResult result = world.rayTrace(start, p.getLocation().getDirection(), maxDistance,
-				FluidCollisionMode.NEVER, true, 0.1,
-				(e) -> e != null && e instanceof Player && !e.getName().equals(p.getName()));
+				FluidCollisionMode.NEVER, true, 0.1, (e) -> e != null && e instanceof Player
+						&& !e.getName().equals(p.getName()) && ((Player) e).getGameMode() != GameMode.SPECTATOR);
 
 		if (result == null)
 			return false;
@@ -193,16 +194,16 @@ public class Utils {
 		}
 		return "";
 	}
-	
+
 	public static Color colorFromString(String string) {
-		switch (string) {
-		case "Red":
+		switch (string.charAt(0)) {
+		case 'R':
 			return Color.RED;
-		case "Blue":
+		case 'B':
 			return Color.AQUA;
-		case "Yello":
+		case 'Y':
 			return Color.YELLOW;
-		case "Green":
+		case 'G':
 			return Color.LIME;
 		}
 		return Color.WHITE;
@@ -267,11 +268,11 @@ public class Utils {
 		int score = arena.getScores().get(p);
 		arena.addScore(p, ++score);
 	}
-	
+
 	public static void increaseTeamScore(Arena arena, String team) {
 		arena.increaseTeamScore(team);
 	}
-	
+
 	public static String getWinningTeam(Map<String, Integer> teamMap) {
 		int max = 0;
 		String winner = "";
@@ -283,7 +284,7 @@ public class Utils {
 		}
 		return winner;
 	}
-	
+
 	public static String getLosingTeam(Map<String, Integer> teamMap) {
 		String winner = getWinningTeam(teamMap);
 		String loser = "";
@@ -293,7 +294,7 @@ public class Utils {
 		}
 		return loser;
 	}
-	
+
 	public static String getArenaNameFromString(String string) {
 		string = string.substring(2);
 		StringBuilder sb = new StringBuilder();
