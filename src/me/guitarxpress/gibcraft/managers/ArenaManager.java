@@ -28,6 +28,7 @@ import me.guitarxpress.gibcraft.Stats;
 import me.guitarxpress.gibcraft.enums.Mode;
 import me.guitarxpress.gibcraft.enums.Status;
 import me.guitarxpress.gibcraft.events.EditMode;
+import me.guitarxpress.gibcraft.sql.SQLGetter;
 import me.guitarxpress.gibcraft.utils.RepeatingTask;
 import me.guitarxpress.gibcraft.utils.Utils;
 
@@ -45,6 +46,7 @@ public class ArenaManager {
 	public int maxFrags;
 	public int timeToStart;
 	private GameManager gm;
+	private SQLGetter data;
 
 	private Map<Player, ItemStack[]> oldInventory = new HashMap<>();
 	private Map<Player, Float> oldExp = new HashMap<>();
@@ -53,6 +55,8 @@ public class ArenaManager {
 
 	public ArenaManager(GibCraft plugin) {
 		this.plugin = plugin;
+		this.data = plugin.getSQLGetter();
+
 		arenas = new ArrayList<>();
 		arenaNames = new ArrayList<>();
 		playerInArena = new HashMap<>();
@@ -95,7 +99,9 @@ public class ArenaManager {
 	}
 
 	public void addPlayerToArena(Player player, Arena arena) {
-		if (!plugin.playerStats.containsKey(player.getName()))
+		if (plugin.getSQL().isConnected())
+			data.loadPlayerValues(player.getUniqueId());
+		else if (!plugin.playerStats.containsKey(player.getName()))
 			plugin.playerStats.put(player.getName(),
 					new Stats(player.getUniqueId().toString(), 0, 0, 0, 0, 0, 0, 0, 0));
 
@@ -116,7 +122,36 @@ public class ArenaManager {
 			toLobby(player);
 	}
 
+	public void addPlayerToArena(Player player, Arena arena, String team) {
+		if (plugin.getSQL().isConnected())
+			data.loadPlayerValues(player.getUniqueId());
+		else if (!plugin.playerStats.containsKey(player.getName()))
+			plugin.playerStats.put(player.getName(),
+					new Stats(player.getUniqueId().toString(), 0, 0, 0, 0, 0, 0, 0, 0));
+
+		if (!arena.teamExists(team))
+			arena.createTeam(team);
+		arena.addToTeam(team, player);
+
+		arena.addPlayer(player);
+		arena.addToArena(player);
+		arena.addScore(player, 0);
+		playerInArena.put(player, arena);
+
+		for (Player p : arena.getAllPlayers())
+			p.sendMessage(Commands.prefix() + "§6" + player.getName() + "§e joined the game. (§b"
+					+ arena.getPlayerCount() + "§e/" + "§b" + arena.getMode().maxPlayers() + "§e)");
+
+		if (arena.getPlayerCount() >= arena.getMode().minPlayers())
+			if (arena.getStatus() != Status.STARTING)
+				startTimer(arena);
+
+		if (lobby != null && player.getLocation().distance(lobby) > 20)
+			toLobby(player);
+	}
+
 	public void removePlayerFromArena(Player player, Arena arena) {
+		player.setScoreboard(Bukkit.getScoreboardManager().getNewScoreboard());
 		arena.removeFromArena(player);
 		arena.removePlayer(player);
 		arena.removeScore(player);
@@ -124,7 +159,8 @@ public class ArenaManager {
 		player.removePotionEffect(PotionEffectType.JUMP);
 		playerInArena.remove(player);
 
-		player.setScoreboard(Bukkit.getScoreboardManager().getNewScoreboard());
+		if (arena.getMode() == Mode.DUOS)
+			arena.removeFromTeam(arena.getPlayerTeam(player), player);
 
 		if (arena.getStatus() == Status.ONGOING) {
 			Utils.addLoss(player, plugin.playerStats);
@@ -150,6 +186,10 @@ public class ArenaManager {
 			oldExp.remove(player);
 		}
 
+		if (plugin.getSQL().isConnected())
+			data.updatePlayerValues(player.getUniqueId());
+		plugin.savePlayer(player.getName());
+
 		if (lobby != null && player.getLocation().distance(lobby) > 20)
 			toLobby(player);
 	}
@@ -158,7 +198,7 @@ public class ArenaManager {
 		arena.addSpectator(player);
 		arena.addToArena(player);
 		playerInArena.put(player, arena);
-		createScoreboard(player);
+		createScoreboardFFA(player);
 
 		for (Player p : arena.getAllPlayers())
 			p.sendMessage(Commands.prefix() + player.getName() + " §eis spectating.");
@@ -263,7 +303,24 @@ public class ArenaManager {
 			oldLevel.put(p, p.getLevel());
 
 			p.getInventory().clear();
-			p.getInventory().addItem(ItemManager.guns[i++]);
+			if (arena.getMode() == Mode.FFA)
+				p.getInventory().addItem(ItemManager.guns[i++]);
+			else {
+				if (arena.getPlayerTeam(p).equals("Red")) {
+					p.getInventory().setHelmet(ItemManager.redHat);
+					p.getInventory().setChestplate(ItemManager.redTop);
+					p.getInventory().setLeggings(ItemManager.redLegs);
+					p.getInventory().setBoots(ItemManager.redBoots);
+					p.getInventory().addItem(ItemManager.gunRed);
+				} else {
+					p.getInventory().setHelmet(ItemManager.blueHat);
+					p.getInventory().setChestplate(ItemManager.blueTop);
+					p.getInventory().setLeggings(ItemManager.blueLegs);
+					p.getInventory().setBoots(ItemManager.blueBoots);
+					p.getInventory().addItem(ItemManager.gunBlue);
+				}
+			}
+
 			p.setHealth(20);
 			p.setFoodLevel(20);
 			p.setLevel(0);
@@ -275,7 +332,7 @@ public class ArenaManager {
 
 			Utils.addGamePlayed(p, plugin.playerStats);
 
-			createScoreboard(p);
+			createScoreboardFFA(p);
 
 			p.teleport(arena.selectRandomSpawn());
 		}
@@ -322,6 +379,55 @@ public class ArenaManager {
 		};
 	}
 
+	public void endDuos(Arena arena) {
+		arena.setStatus(Status.ENDED);
+
+		if (arena.getPlayerCount() != 0) {
+			String winners = Utils.getWinningTeam(arena.getTeamScores());
+			String losers = Utils.getLosingTeam(arena.getTeamScores());
+
+			List<Player> toRemove = new ArrayList<>();
+
+			for (Player p : arena.getAllPlayers()) {
+
+				if (arena.getPlayerTeam(p) == winners)
+					Utils.addWin(p, plugin.playerStats);
+				else if (!arena.getSpectators().contains(p))
+					Utils.addLoss(p, plugin.playerStats);
+
+				p.sendMessage(Commands.prefix() + "§6" + winners + " Team §ewon with §6" + arena.getTeamScore(winners)
+						+ " §efrags!");
+
+				p.sendMessage(Commands.prefix() + "§e2. §6" + losers + " §e- " + "§6" + arena.getTeamScore(losers));
+
+				p.setScoreboard(Bukkit.getScoreboardManager().getNewScoreboard());
+
+				toRemove.add(p);
+				plugin.savePlayer(p.getName());
+			}
+
+			for (Player player : toRemove) {
+				if (isSpectating(player))
+					removeSpectatorFromArena(player, arena);
+				else
+					removePlayerFromArena(player, arena);
+				player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1f, 2f);
+				createStatsBoard(player);
+			}
+			toRemove.clear();
+		}
+
+		arena.removeAllPowerups();
+		arena.getAllPlayers().clear();
+		arena.getPlayers().clear();
+		arena.getSpectators().clear();
+		arena.clearScores();
+
+		Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, () -> {
+			arena.setStatus(Status.JOINABLE);
+		}, 2 * 20);
+	}
+
 	public void end(Arena arena) {
 		arena.setStatus(Status.ENDED);
 
@@ -340,7 +446,7 @@ public class ArenaManager {
 					Utils.addLoss(p, plugin.playerStats);
 
 				p.sendMessage(Commands.prefix() + "§6" + winner.getName() + " §ewon with §6"
-						+ arena.getScores().get(winner) + " §ekills!");
+						+ arena.getScores().get(winner) + " §efrags!");
 
 				for (int j = 2; j <= arena.getPlayerCount(); j++) {
 					p.sendMessage(Commands.prefix() + "§e" + j + ". §6" + players.get(j - 1).getName() + " §e- " + "§6"
@@ -350,7 +456,6 @@ public class ArenaManager {
 				p.setScoreboard(Bukkit.getScoreboardManager().getNewScoreboard());
 
 				toRemove.add(p);
-				plugin.savePlayer(p.getName());
 			}
 
 			for (Player player : toRemove) {
@@ -359,7 +464,7 @@ public class ArenaManager {
 				else
 					removePlayerFromArena(player, arena);
 				player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1f, 2f);
-				createScoreboard(player);
+				createStatsBoard(player);
 			}
 
 			toRemove.clear();
@@ -376,7 +481,7 @@ public class ArenaManager {
 		}, 2 * 20);
 	}
 
-	public void createScoreboard(Player p) {
+	public void createScoreboardFFA(Player p) {
 		Arena arena = getPlayerArena(p);
 		ScoreboardManager manager = Bukkit.getScoreboardManager();
 		Scoreboard board = manager.getNewScoreboard();
@@ -396,11 +501,33 @@ public class ArenaManager {
 		p.setScoreboard(board);
 	}
 
+	public void createScoreboardDuos(Player p) {
+		Arena arena = getPlayerArena(p);
+		ScoreboardManager manager = Bukkit.getScoreboardManager();
+		Scoreboard board = manager.getNewScoreboard();
+		Objective obj = board.registerNewObjective("Scoreboard", "dummy", "§6Time Left: §e" + arenaTimer.get(arena));
+		obj.setDisplaySlot(DisplaySlot.SIDEBAR);
+
+		Team fragLimit = board.registerNewTeam("fragLimit");
+		fragLimit.addEntry("§6Frag Limit: ");
+		Score score = obj.getScore("§6Frag Limit: ");
+		score.setScore(maxFrags);
+
+		Score sc1 = obj.getScore("§4Red Team");
+		sc1.setScore(arena.getTeamScore("Red"));
+		Score sc2 = obj.getScore("§3Blue Team");
+		sc2.setScore(arena.getTeamScore("Blue"));
+
+		p.setScoreboard(board);
+	}
+
 	public void createStatsBoard(Player p) {
 		if (!plugin.playerStats.containsKey(p.getName())) {
 			p.sendMessage(Commands.prefix() + "§cYou haven't played a game yet.");
 			return;
 		}
+
+		p.sendMessage(Commands.prefix() + "§eDisplaying Stats");
 
 		DecimalFormat df = new DecimalFormat(" #,##0.00");
 

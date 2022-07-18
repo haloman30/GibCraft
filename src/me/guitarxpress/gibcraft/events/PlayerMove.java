@@ -42,7 +42,7 @@ public class PlayerMove implements Listener {
 	@EventHandler
 	public void onPlayerMove(PlayerMoveEvent event) {
 		Player p = event.getPlayer();
-
+		
 		if (!am.isPlayerInArena(p))
 			return;
 
@@ -72,8 +72,8 @@ public class PlayerMove implements Listener {
 					// Check if player was knocked outside bounds
 					if (gm.knockedBy.containsKey(p) && !gm.knockedBy.get(p).getName().equals(p.getName())) {
 						Player killer = gm.knockedBy.get(p);
-						Utils.increaseArenaScore(killer, arena);
-						
+						Utils.increasePlayerScore(killer, arena);
+
 						Utils.addFrag(killer, plugin.playerStats);
 						for (Player player : arena.getAllPlayers()) {
 							player.sendMessage("§f" + killer.getName() + " knocked " + p.getName() + " off the arena!");
@@ -85,7 +85,10 @@ public class PlayerMove implements Listener {
 						}
 					}
 					p.setGameMode(GameMode.SPECTATOR);
-					Utils.spawnFireworks(p.getLocation().clone().add(new Vector(0, 1.5, 0)), Color.WHITE);
+					Utils.spawnFireworks(p.getLocation().clone().add(new Vector(0, 1.5, 0)),
+							p.getInventory().getItemInMainHand() == null ? Color.WHITE
+									: Utils.colorFromString(
+											p.getInventory().getItemInMainHand().getItemMeta().getLore().get(0)));
 					gm.respawnPlayer(p, arena);
 				}
 			}
@@ -99,13 +102,14 @@ public class PlayerMove implements Listener {
 		List<ArmorStand> powerups = arena.getPowerups();
 		ArmorStand toRemove = null;
 		for (ArmorStand as : powerups) {
-			if (p.getLocation().distance(as.getLocation()) <= 1) {
+			if (p.getLocation().distance(as.getLocation()) <= 1.5) {
 				int r = rnd.nextInt(plugin.powerups.size());
 				PowerUp pu = plugin.powerups.get(r);
 				toRemove = as;
 				pu.applyEffect(p);
 				p.sendMessage(Commands.prefix() + "§ePicked up PowerUp: §6" + pu.getName());
-				p.playSound(as.getLocation(), Sound.BLOCK_NOTE_BLOCK_BELL, 50f, 1f);
+//				p.playSound(as.getLocation(), Sound.BLOCK_NOTE_BLOCK_BELL, 1f, 1f);
+				p.playSound(as.getLocation(), Sound.BLOCK_BEACON_POWER_SELECT, 1f, 1f);
 			}
 		}
 		if (toRemove != null)

@@ -23,7 +23,7 @@ public class Stats {
 		this.shotsHit = 0;
 		this.headshots = 0;
 	}
-	
+
 	public Stats(String uuid, int kills, int deaths, int wins, int gamesPlayed, int losses, int shotsFired,
 			int shotsHit, int headshots) {
 		this.uuid = uuid;
@@ -172,9 +172,16 @@ public class Stats {
 	public void increaseHeadshots() {
 		this.headshots++;
 	}
-	
+
 	public double getHeadshotPercentage() {
 		return shotsHit == 0 ? 0 : (((double) headshots / (double) shotsHit) * 100);
+	}
+
+	@Override
+	public String toString() {
+		return String.format(
+				"UUID: %s | Kills: %s | Deaths: %s | Wins: %s | Games Played: %s | Losses: %s | Shots Fired: %s | Shots Hit: %s | Headshots: %s",
+				uuid, kills, deaths, wins, gamesPlayed, losses, shotsFired, shotsHit, headshots);
 	}
 
 }

@@ -1,11 +1,10 @@
 package me.guitarxpress.gibcraft.enums;
 
 public enum Mode {
-	FFA, 
-	DUOS;
-	
+	FFA, DUOS;
+
 	public int maxPlayers() {
-		switch(this) {
+		switch (this) {
 		case DUOS:
 			return 4;
 		case FFA:
@@ -14,9 +13,9 @@ public enum Mode {
 			return 0;
 		}
 	}
-	
+
 	public int minPlayers() {
-		switch(this) {
+		switch (this) {
 		case DUOS:
 			return 4;
 		case FFA:
@@ -25,7 +24,18 @@ public enum Mode {
 			return 0;
 		}
 	}
-	
+
+	public int maxPerTeam() {
+		switch (this) {
+		case DUOS:
+			return 2;
+		case FFA:
+			return 1;
+		default:
+			return 0;
+		}
+	}
+
 	public static Mode fromString(String mode) {
 		if (mode.equalsIgnoreCase("ffa"))
 			return FFA;

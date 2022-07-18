@@ -1,6 +1,7 @@
 package me.guitarxpress.gibcraft;
 
 import org.bukkit.Bukkit;
+import org.bukkit.GameMode;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -34,6 +35,7 @@ public class Commands implements CommandExecutor {
 				Bukkit.dispatchCommand(p, "gib info");
 				break;
 			case 1:
+				// Help
 				if (args[0].equalsIgnoreCase("help")) {
 					p.sendMessage(prefix() + "§eAvailable Commands: \n"
 							+ "§e - §6/gib help §e- §fDisplays available commands.\n"
@@ -59,6 +61,8 @@ public class Commands implements CommandExecutor {
 						p.sendMessage(
 								"§e - §6/gib setstatus <arena> <status> §e- §fChanges the specified arena status to the new one.");
 					}
+
+					// Info
 				} else if (args[0].equalsIgnoreCase("info")) {
 					p.sendMessage(prefix() + "§ePlugin being developed by §4GuitarXpress§e." + "\n- Plugin Version: §4"
 							+ plugin.getDescription().getVersion() + "\n§e- API Version: §4"
@@ -66,6 +70,8 @@ public class Commands implements CommandExecutor {
 							+ "\n§ePlease to submit any feedback or bugs on discord.\n"
 							+ "\n§cNote that your stats may be reset during the beta phase.§e"
 							+ "\nFor help use §6/gib help§e.");
+
+					// List
 				} else if (args[0].equalsIgnoreCase("list")) {
 					if (p.hasPermission(cmd + ".play")) {
 						p.sendMessage(prefix() + "§eAvailable arenas:");
@@ -73,35 +79,48 @@ public class Commands implements CommandExecutor {
 							p.sendMessage(" §e- §6" + arena.getName() + "§e - " + arena.getStatus().display());
 						}
 					}
+
+					// Create
 				} else if (args[0].equalsIgnoreCase("create")) {
 					if (p.hasPermission(cmd + ".create")) {
 						p.sendMessage(prefix() + "§cMissing arguments. §6/" + cmd + " create <name> + §c.");
 					}
+
+					// Leave
 				} else if (args[0].equalsIgnoreCase("leave")) {
 					if (p.hasPermission(cmd + ".play")) {
 						if (am.isPlayerInArena(p)) {
 							Arena arena = am.getPlayerArena(p);
-							am.removePlayerFromArena(p, arena);
-							p.sendMessage(prefix() + "§eYou left the game.");
+							if (p.getGameMode() != GameMode.SPECTATOR) {
+								am.removePlayerFromArena(p, arena);
+								p.sendMessage(prefix() + "§eYou left the game.");
+							} else {
+								am.removeSpectatorFromArena(p, arena);
+								p.sendMessage(prefix() + "§eYou left spectators.");
+							}
 						} else {
 							p.sendMessage(prefix() + "§cYou're not in a game.");
 						}
 					}
+
+					// Setlobby
 				} else if (args[0].equalsIgnoreCase("setlobby")) {
 					if (p.hasPermission(cmd + ".create")) {
 						am.setLobby(p.getLocation());
 						p.sendMessage(prefix() + "§eLobby set.");
 					}
+
+					// Stats
 				} else if (args[0].equalsIgnoreCase("stats")) {
 					if (p.hasPermission(cmd + ".play")) {
 						am.createStatsBoard(p);
-						p.sendMessage(prefix() + "§eDisplaying Stats");
 					}
 				} else {
 					p.sendMessage(prefix() + "§cInvalid Command.");
 				}
 				break;
 			case 2:
+				// Create
 				if (args[0].equalsIgnoreCase("create")) {
 					if (p.hasPermission(cmd + ".create")) {
 						if (!am.exists(args[1])) {
@@ -112,6 +131,8 @@ public class Commands implements CommandExecutor {
 							p.sendMessage(prefix() + "§cArena already exists.");
 						}
 					}
+
+					// Delete
 				} else if (args[0].equalsIgnoreCase("delete")) {
 					if (p.hasPermission(cmd + ".delete")) {
 						if (am.exists(args[1])) {
@@ -121,6 +142,8 @@ public class Commands implements CommandExecutor {
 							p.sendMessage(prefix() + "§cArena §6" + args[1] + " §cdoesn't exist.");
 						}
 					}
+
+					// Join
 				} else if (args[0].equalsIgnoreCase("join")) {
 					if (p.hasPermission(cmd + ".play")) {
 						if (am.isLobbySet()) {
@@ -129,7 +152,11 @@ public class Commands implements CommandExecutor {
 								if (!arena.isFull()) {
 									if (arena.getStatus() == Status.JOINABLE || arena.getStatus() == Status.STARTING) {
 										if (!am.isPlayerInArena(p)) {
-											am.addPlayerToArena(p, arena);
+											if (arena.getMode() == Mode.DUOS) {
+												plugin.getGUIManager().openTeamsGUI(p, arena.getName());
+											} else {
+												am.addPlayerToArena(p, arena);
+											}
 										} else {
 											p.sendMessage(prefix() + "§cYou're already in a game.");
 										}
@@ -151,6 +178,8 @@ public class Commands implements CommandExecutor {
 							p.sendMessage(prefix() + "§cLobby isn't set.");
 						}
 					}
+
+					// Spectate
 				} else if (args[0].equalsIgnoreCase("spectate")) {
 					if (p.hasPermission(cmd + ".play")) {
 						if (am.exists(args[1])) {
@@ -171,6 +200,8 @@ public class Commands implements CommandExecutor {
 							p.sendMessage(prefix() + "§cArena doesn't exist.");
 						}
 					}
+
+					// Edit
 				} else if (args[0].equalsIgnoreCase("edit")) {
 					if (p.hasPermission(cmd + ".edit")) {
 						if (am.exists(args[1])) {
@@ -185,30 +216,32 @@ public class Commands implements CommandExecutor {
 							}
 						}
 					}
+
 				} else {
 					p.sendMessage(prefix() + "§cInvalid Command.");
 				}
 				break;
 			case 3:
-//				if (args[0].equalsIgnoreCase("create")) {
-//					if (p.hasPermission(cmd + ".create")) {
-//						if (!am.exists(args[1])) {
-//							if (args[2].equalsIgnoreCase("ffa") || args[2].equalsIgnoreCase("duos")) {
-//								am.createArena(args[1], Mode.fromString(args[2]));
-//								p.sendMessage(prefix() + "§aArena created. §eEdit it with §6/" + cmd + " edit " + args[1]
-//										+ "§a.");
-//							} else {
-//								p.sendMessage(prefix() + "§cInvalid mode. Available modes: ");
-//								for (int i = 0; i < Mode.values().length; i++) {
-//									p.sendMessage("§6 - " + Mode.values()[i]);
-//								}
-//							}
-//						} else {
-//							p.sendMessage(prefix() + "§cArena already exists.");
-//						}
-//					}
-//				} else 
-				if (args[0].equalsIgnoreCase("setstatus")) {
+				if (args[0].equalsIgnoreCase("create")) {
+					if (p.hasPermission(cmd + ".create")) {
+						if (!am.exists(args[1])) {
+							if (args[2].equalsIgnoreCase("ffa") || args[2].equalsIgnoreCase("duos")) {
+								am.createArena(args[1], Mode.fromString(args[2]));
+								p.sendMessage(prefix() + "§aArena created. §eEdit it with §6/" + cmd + " edit "
+										+ args[1] + "§a.");
+							} else {
+								p.sendMessage(prefix() + "§cInvalid mode. Available modes: ");
+								for (int i = 0; i < Mode.values().length; i++) {
+									p.sendMessage("§6 - " + Mode.values()[i]);
+								}
+							}
+						} else {
+							p.sendMessage(prefix() + "§cArena already exists.");
+						}
+					}
+
+					// Setstatus
+				} else if (args[0].equalsIgnoreCase("setstatus")) {
 					if (p.hasPermission(cmd + ".status")) {
 						if (am.exists(args[1])) {
 							Arena arena = am.getArena(args[1]);
@@ -219,6 +252,7 @@ public class Commands implements CommandExecutor {
 							p.sendMessage(prefix() + "§cArena doesn't exist.");
 						}
 					}
+
 				} else {
 					p.sendMessage(prefix() + "§cInvalid Command.");
 				}

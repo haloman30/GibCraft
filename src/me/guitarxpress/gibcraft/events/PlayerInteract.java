@@ -25,6 +25,7 @@ import org.bukkit.util.Vector;
 
 import me.guitarxpress.gibcraft.Arena;
 import me.guitarxpress.gibcraft.GibCraft;
+import me.guitarxpress.gibcraft.enums.Mode;
 import me.guitarxpress.gibcraft.enums.Status;
 import me.guitarxpress.gibcraft.managers.ArenaManager;
 import me.guitarxpress.gibcraft.managers.GameManager;
@@ -81,6 +82,8 @@ public class PlayerInteract implements Listener {
 				// Increase shots fired
 				Utils.addShotFired(p, plugin.playerStats);
 
+				Arena arena = am.getPlayerArena(p);
+
 				// Put player on cooldown
 				if (GibCraft.playerPowerup.containsKey(p) && GibCraft.playerPowerup.get(p).getId() == 1) {
 					p.setCooldown(Material.IRON_HOE, 8);
@@ -92,7 +95,6 @@ public class PlayerInteract implements Listener {
 
 				// Play shooting sound
 				p.getWorld().playSound(p.getLocation(), Sound.ENTITY_WITHER_SHOOT, .35f, 2f);
-//				p.getWorld().playSound(p.getLocation(), Sound.ENTITY_BLAZE_HURT, .5f, 2f);
 				p.getWorld().playSound(p.getLocation(), Sound.BLOCK_BEACON_DEACTIVATE, .35f, 2f);
 
 				// Get hit data
@@ -108,11 +110,18 @@ public class PlayerInteract implements Listener {
 
 				// Check if shooter hit a player
 				if (Utils.hitPlayer(p.getLocation().add(new Vector(0, 1.5, 0)), 100, p.getLocation().getWorld(), p)) {
+					// Get player hit
+					Player hit = (Player) result.getHitEntity();
+
+					if (hit.getGameMode() == GameMode.SPECTATOR)
+						return;
+
+					if (arena.getMode() == Mode.DUOS
+							&& (arena.getPlayerTeam(hit) == arena.getPlayerTeam(p) && arena.getPlayerTeam(p) != null))
+						return;
+
 					// Increase shots hit
 					Utils.addShotHit(p, plugin.playerStats);
-
-					// Get player hit statistics
-					Player hit = (Player) result.getHitEntity();
 
 					// Check if the shot was a headshot
 					Location hitPos = result.getHitPosition().toLocation(p.getWorld());
@@ -124,11 +133,11 @@ public class PlayerInteract implements Listener {
 					}
 
 					// Spawn a firework where player got hit
-					Utils.spawnFireworks(hit.getLocation().clone().add(new Vector(0, 1.5, 0)), Color.WHITE);
+					Utils.spawnFireworks(hit.getLocation().clone().add(new Vector(0, 1.5, 0)),
+							Utils.colorFromString(item.getItemMeta().getLore().get(0)));
 					p.getWorld().playSound(hit.getLocation(), Sound.ENTITY_FIREWORK_ROCKET_LARGE_BLAST, 10f, 1f);
 
 					Random random = new Random();
-					Arena arena = am.getPlayerArena(p);
 
 					// Send death message to all in game players
 					if (!plugin.deathMessages1.isEmpty() && !plugin.deathMessages2.isEmpty())
@@ -145,8 +154,10 @@ public class PlayerInteract implements Listener {
 						}
 
 					// Get arena score and increase shooter's score by 1
-					int score = arena.getScores().get(p);
-					arena.getScores().put(p, ++score);
+					if (arena.getMode() == Mode.FFA)
+						arena.increaseScore(p);
+					else
+						arena.increaseTeamScore(arena.getPlayerTeam(p));
 
 					Utils.addFrag(p, plugin.playerStats);
 					p.playSound(p.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1f, 1f);
@@ -166,10 +177,15 @@ public class PlayerInteract implements Listener {
 						if (!(e instanceof Player))
 							continue;
 
+						Player ePlayer = (Player) e;
+
+						if (arena.getPlayerTeam(p) != null && arena.getPlayerTeam(ePlayer) == arena.getPlayerTeam(p))
+							return;
+
 						gm.knockedBy.put((Player) e, p);
 
+						Vector difference = startLoc.toVector().subtract(hitLoc.toVector());
 						Vector dir;
-						Vector difference = hitLoc.toVector().subtract(startLoc.toVector());
 						if (e.getLocation().distance(hitLoc) != 0)
 							dir = e.getLocation().subtract(hitLoc).toVector().normalize().multiply(2);
 						else

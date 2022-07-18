@@ -30,6 +30,9 @@ public class Arena {
 	private List<Player> allPlayers;
 
 	private List<ArmorStand> powerups;
+	
+	private Map<String, List<Player>> teams;
+	private Map<String, Integer> teamScore;
 
 	public Arena(String name, Status status, Mode mode) {
 		this.name = name;
@@ -41,6 +44,8 @@ public class Arena {
 		this.scores = new HashMap<>();
 		this.allPlayers = new ArrayList<>();
 		this.powerups = new ArrayList<>();
+		this.teams = new HashMap<>();
+		this.teamScore = new HashMap<>();
 	}
 
 	public String getName() {
@@ -191,6 +196,75 @@ public class Arena {
 			powerups.get(i).remove();
 			powerups.remove(i);
 		}
+	}
+	
+	public Map<String, List<Player>> getTeams() {
+		return this.teams;
+	}
+	
+	public void setTeams(Map<String, List<Player>> teams) {
+		this.teams = teams;
+	}
+	
+	public void addToTeam(String team, Player player) {
+		List<Player> teamPlayers = teams.get(team);
+		teamPlayers.add(player);
+		teams.put(team, teamPlayers);
+	}
+	
+	public void addToTeam(String team, List<Player> players) {
+		teams.put(team, players);
+	}
+	
+	public void removeFromTeam(String team, Player player) {
+		List<Player> teamPlayers = teams.get(team);
+		teamPlayers.remove(player);
+		teams.put(team, teamPlayers);
+	}
+	
+	public void removeTeam(String team) {
+		teams.remove(team);
+	}
+	
+	public boolean teamExists(String team) {
+		return teams.containsKey(team);
+	}
+	
+	public List<Player> getTeamPlayers(String team) {
+		return teams.get(team);
+	}
+	
+	public void createTeam(String team) {
+		teams.put(team, new ArrayList<>());
+		teamScore.put(team, 0);
+	}
+	
+	public void increaseTeamScore(String team) {
+		int score = teamScore.get(team);
+		teamScore.put(team, ++score);
+	}
+	
+	/*
+	 * @return team if player is on a team. Null otherwise.
+	 */
+	public String getPlayerTeam(Player p) {
+		for (Map.Entry<String, List<Player>> entry : teams.entrySet()) {
+			if (entry.getValue().contains(p))
+				return entry.getKey();
+		}
+		return null;
+	}
+
+	public Map<String, Integer> getTeamScores() {
+		return teamScore;
+	}
+	
+	public int getTeamScore(String team) {
+		return teamScore.get(team);
+	}
+
+	public void setTeamScore(Map<String, Integer> teamScore) {
+		this.teamScore = teamScore;
 	}
 
 	/*

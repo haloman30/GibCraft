@@ -193,6 +193,20 @@ public class Utils {
 		}
 		return "";
 	}
+	
+	public static Color colorFromString(String string) {
+		switch (string) {
+		case "Red":
+			return Color.RED;
+		case "Blue":
+			return Color.AQUA;
+		case "Yello":
+			return Color.YELLOW;
+		case "Green":
+			return Color.LIME;
+		}
+		return Color.WHITE;
+	}
 
 	public static String getNameFromString(String string) {
 		String s = string;
@@ -249,9 +263,46 @@ public class Utils {
 		statsMap.put(p.getName(), stats);
 	}
 
-	public static void increaseArenaScore(Player p, Arena arena) {
+	public static void increasePlayerScore(Player p, Arena arena) {
 		int score = arena.getScores().get(p);
 		arena.addScore(p, ++score);
+	}
+	
+	public static void increaseTeamScore(Arena arena, String team) {
+		arena.increaseTeamScore(team);
+	}
+	
+	public static String getWinningTeam(Map<String, Integer> teamMap) {
+		int max = 0;
+		String winner = "";
+		for (Map.Entry<String, Integer> entry : teamMap.entrySet()) {
+			if (entry.getValue() >= max) {
+				max = entry.getValue();
+				winner = entry.getKey();
+			}
+		}
+		return winner;
+	}
+	
+	public static String getLosingTeam(Map<String, Integer> teamMap) {
+		String winner = getWinningTeam(teamMap);
+		String loser = "";
+		for (Map.Entry<String, Integer> entry : teamMap.entrySet()) {
+			if (entry.getKey() != winner)
+				loser = entry.getKey();
+		}
+		return loser;
+	}
+	
+	public static String getArenaNameFromString(String string) {
+		string = string.substring(2);
+		StringBuilder sb = new StringBuilder();
+		for (int i = 0; i < string.length(); i++) {
+			if (string.charAt(i) == '-')
+				break;
+			sb.append(string.charAt(i));
+		}
+		return sb.toString().trim();
 	}
 
 }

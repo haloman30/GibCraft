@@ -80,8 +80,8 @@ public class TabComplete implements TabCompleter {
 				} else if (args.length == 3) {
 					if (args[0].equalsIgnoreCase("create")) {
 						if (player.hasPermission(cmd + ".create")) {
-//							list.add("ffa");
-//							list.add("duos");
+							list.add("ffa");
+							list.add("duos");
 						}
 					} else if (args[0].equalsIgnoreCase("setstatus")) {
 						if (player.hasPermission(cmd + ".setstatus")) {

@@ -127,7 +127,7 @@ public class SignEvents implements Listener {
 	public static void updateSign(Sign sign, ArenaManager am, String arena) {
 		sign.setLine(0, "§7[§4Gib§6Craft§7]");
 		sign.setLine(1, "§b" + arena);
-		sign.setLine(2, "§e" + am.getArena(arena).getPlayerCount() + "/4");
+		sign.setLine(2, "§e" + am.getArena(arena).getPlayerCount() + "/4 - " + am.getArena(arena).getMode().toString());
 		switch (am.getArena(arena).getStatus()) {
 		case SETTING_UP:
 			sign.setLine(3, "§6SETTING UP");

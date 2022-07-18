@@ -1,10 +1,12 @@
 package me.guitarxpress.gibcraft;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -41,8 +43,11 @@ import me.guitarxpress.gibcraft.events.PlayerQuit;
 import me.guitarxpress.gibcraft.events.SignEvents;
 import me.guitarxpress.gibcraft.events.ToggleFlight;
 import me.guitarxpress.gibcraft.managers.ArenaManager;
+import me.guitarxpress.gibcraft.managers.GUIManager;
 import me.guitarxpress.gibcraft.managers.GameManager;
 import me.guitarxpress.gibcraft.managers.ItemManager;
+import me.guitarxpress.gibcraft.sql.MySQL;
+import me.guitarxpress.gibcraft.sql.SQLGetter;
 import me.guitarxpress.gibcraft.utils.ConfigClass;
 import me.guitarxpress.gibcraft.utils.Metrics;
 import me.guitarxpress.gibcraft.utils.RepeatingTask;
@@ -53,7 +58,14 @@ public class GibCraft extends JavaPlugin {
 	private ArenaManager am;
 	private GameManager gm;
 	private ConfigClass cfg;
+	private GUIManager guim;
+
+	private MySQL sql;
+	private SQLGetter sqlGetter;
 	private FileConfiguration dataCfg;
+	
+	private boolean localSave;
+	private boolean loadFromSQL;
 
 	public List<PowerUp> powerups = new ArrayList<>();
 	public static Map<Player, PowerUp> playerPowerup = new HashMap<>();
@@ -72,6 +84,18 @@ public class GibCraft extends JavaPlugin {
 		return this.gm;
 	}
 
+	public GUIManager getGUIManager() {
+		return this.guim;
+	}
+
+	public MySQL getSQL() {
+		return this.sql;
+	}
+
+	public SQLGetter getSQLGetter() {
+		return this.sqlGetter;
+	}
+
 	public ConfigClass getCfg() {
 		return this.cfg;
 	}
@@ -83,11 +107,26 @@ public class GibCraft extends JavaPlugin {
 		saveDefaultConfig();
 
 		ItemManager.init();
+
+		sql = new MySQL(this);
+		sqlGetter = new SQLGetter(this);
+		
 		gm = new GameManager(this);
 		am = new ArenaManager(this);
+		guim = new GUIManager(this);
 		cfg = new ConfigClass(this);
+		
 		dataCfg = ConfigClass.getDataCfg();
+
 		protocolManager = ProtocolLibrary.getProtocolManager();
+
+		loadSQLConfig();
+		try {
+			sql.connect();
+		} catch (ClassNotFoundException | SQLException e) {
+			getServer().getConsoleSender().sendMessage(
+					"§7[§4Gib§6Craft§7] §cCould not connect to SQL Database. Ignore if you don't have one.");
+		}
 
 		getServer().getPluginManager().registerEvents(new EditMode(this), this);
 		getServer().getPluginManager().registerEvents(new EntityDamageByEntity(this), this);
@@ -102,12 +141,19 @@ public class GibCraft extends JavaPlugin {
 		getServer().getPluginManager().registerEvents(new PlayerInteractAtEntity(this), this);
 		getServer().getPluginManager().registerEvents(new ToggleFlight(this), this);
 		getServer().getPluginManager().registerEvents(new CommandPreprocess(this), this);
+		getServer().getPluginManager().registerEvents(guim, this);
+		new PacketSend(this);
 
 		getServer().getPluginCommand("gibcraft").setExecutor(new Commands(this));
 		getServer().getPluginCommand("gibcraft").setTabCompleter(new TabComplete(this));
 
-		new PacketSend(this);
 		loadData();
+
+		if (sql.isConnected()) {
+			getServer().getConsoleSender().sendMessage("§7[§4Gib§6Craft§7] §aSQL connected.");
+			sqlGetter.createPlayerTable();
+		}
+
 		createPowerUps();
 		startGlobalRunnableSecond(this);
 		startGlobalRunnableTick(this);
@@ -119,13 +165,30 @@ public class GibCraft extends JavaPlugin {
 
 	@Override
 	public void onDisable() {
+		endAllArenas();
 		saveData();
+		sql.disconnect();
 		getServer().getConsoleSender().sendMessage("§7[§4Gib§6Craft§7] §cDisabled");
+	}
+	
+	public void loadSQLConfig() {
+		sql.setHost(this.getConfig().getString("host"));
+		sql.setPort(this.getConfig().getString("port"));
+		sql.setDatabase(this.getConfig().getString("database"));
+		sql.setUsername(this.getConfig().getString("username"));
+		sql.setPassword(this.getConfig().getString("password"));
+		sql.setUseSSL(this.getConfig().getBoolean("useSSL"));
 	}
 
 	@SuppressWarnings("unchecked")
 	public void loadData() {
-		loadPlayers();
+		localSave = this.getConfig().getBoolean("localSave");
+		loadFromSQL = this.getConfig().getBoolean("loadFromSQL"); 
+		        
+		if (!loadFromSQL || !sql.isConnected())
+			loadPlayers();
+		else
+			sqlGetter.loadAllPlayerValues();
 		loadArenas();
 
 		am.gameTime = getConfig().getInt("gameTime");
@@ -158,9 +221,20 @@ public class GibCraft extends JavaPlugin {
 		powerups.add(jump);
 	}
 
+	public void endAllArenas() {
+		for (Arena arena : am.arenas)
+			if (arena.getStatus() == Status.STARTING || arena.getStatus() == Status.ONGOING
+					|| arena.getStatus() == Status.STARTUP)
+				if (arena.getMode() == Mode.DUOS)
+					am.endDuos(arena);
+				else
+					am.end(arena);
+	}
+
 	public void saveData() {
+		if (localSave || !sql.isConnected() || !loadFromSQL)
+			savePlayers();
 		saveArenas();
-		savePlayers();
 
 		if (!SignEvents.signsLoc.isEmpty()) {
 			dataCfg.set("Signs.Locations", SignEvents.signsLoc);
@@ -193,6 +267,12 @@ public class GibCraft extends JavaPlugin {
 	}
 
 	public void savePlayer(String player) {
+		if (sql.isConnected()) {
+			sqlGetter.updatePlayerValues(Bukkit.getPlayer(player).getUniqueId());
+			if (!localSave)
+				return;
+		}
+
 		cfg.createNewPlayerFiles();
 		FileConfiguration pCfg = cfg.getPlayerCfg(player);
 		Stats stats = playerStats.get(player);
@@ -248,6 +328,14 @@ public class GibCraft extends JavaPlugin {
 			saveArena(arena);
 		}
 	}
+	
+	public boolean isLoadFromSQL() {
+		return loadFromSQL;
+	}
+
+	public void setLoadFromSQL(boolean loadFromSQL) {
+		this.loadFromSQL = loadFromSQL;
+	}
 
 	// Runs every second
 	public void startGlobalRunnableSecond(GibCraft plugin) {
@@ -289,7 +377,10 @@ public class GibCraft extends JavaPlugin {
 								am.arenaTimer.put(arena, --timer);
 							else {
 								am.arenaTimer.put(arena, 0);
-								am.end(arena);
+								if (arena.getMode() == Mode.FFA)
+									am.end(arena);
+								else
+									am.endDuos(arena);
 							}
 
 							for (Player p : arena.getPlayers()) {
@@ -315,7 +406,10 @@ public class GibCraft extends JavaPlugin {
 				for (Arena arena : am.arenas) {
 					if (arena.getStatus() == Status.ONGOING) {
 						for (Player p : arena.getAllPlayers()) {
-							am.createScoreboard(p);
+							if (arena.getMode() == Mode.FFA)
+								am.createScoreboardFFA(p);
+							else
+								am.createScoreboardDuos(p);
 
 							if (am.isPlayerInArena(p) && !am.isSpectating(p)) {
 								if (PlayerInteract.cooldowns.containsKey(p)) {
