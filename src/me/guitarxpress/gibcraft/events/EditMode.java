@@ -16,6 +16,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import me.guitarxpress.gibcraft.Arena;
 import me.guitarxpress.gibcraft.Commands;
 import me.guitarxpress.gibcraft.GibCraft;
+import me.guitarxpress.gibcraft.enums.Status;
 import me.guitarxpress.gibcraft.managers.ArenaManager;
 import me.guitarxpress.gibcraft.managers.ItemManager;
 
@@ -51,6 +52,8 @@ public class EditMode implements Listener {
 			player.getInventory().setContents(oldInventory.get(player));
 			oldInventory.remove(player);
 		}
+		
+		arena.setStatus(Status.JOINABLE);
 	}
 
 	/////////// EVENTS ///////////
@@ -68,7 +71,7 @@ public class EditMode implements Listener {
 				event.setCancelled(true);
 				toggleEditMode(p,
 						am.getArena(item.getItemMeta().getLore().get(item.getItemMeta().getLore().size() - 1)));
-				p.sendMessage(Commands.prefix() + "§eRemember to set a lobby and change arena status.");
+				p.sendMessage(Commands.prefix() + "§eToggled edit mode.");
 			} else if (item.getItemMeta().getLore().get(0).equals("§6Left Click §7to set corner 1.")) {
 				event.setCancelled(true);
 				Arena arena = am.getArena(item.getItemMeta().getLore().get(item.getItemMeta().getLore().size() - 1));

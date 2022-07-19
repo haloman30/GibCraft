@@ -19,6 +19,7 @@ import me.guitarxpress.gibcraft.Arena;
 import me.guitarxpress.gibcraft.Commands;
 import me.guitarxpress.gibcraft.GibCraft;
 import me.guitarxpress.gibcraft.PowerUp;
+import me.guitarxpress.gibcraft.enums.Mode;
 import me.guitarxpress.gibcraft.enums.Status;
 import me.guitarxpress.gibcraft.managers.ArenaManager;
 import me.guitarxpress.gibcraft.managers.GameManager;
@@ -42,7 +43,7 @@ public class PlayerMove implements Listener {
 	@EventHandler
 	public void onPlayerMove(PlayerMoveEvent event) {
 		Player p = event.getPlayer();
-		
+
 		if (!am.isPlayerInArena(p))
 			return;
 
@@ -58,11 +59,9 @@ public class PlayerMove implements Listener {
 
 		if (arena.getStatus() == Status.ONGOING) {
 			// Check if player got knocked but fell without dying
-			if (gm.knockedBy.containsKey(p)) {
-				if (p.getWorld().getBlockAt(p.getLocation().subtract(new Vector(0, 1, 0))).getType() != Material.AIR) {
+			if (gm.knockedBy.containsKey(p) && System.currentTimeMillis() >= gm.knockedTimeout.get(p))
+				if (p.getWorld().getBlockAt(p.getLocation().subtract(new Vector(0, 1, 0))).getType() != Material.AIR)
 					gm.knockedBy.remove(p);
-				}
-			}
 
 			// Player goes outside bounds
 			if (!Utils.playerInArea(arena.getBoundaries()[0], arena.getBoundaries()[1], p)) {
@@ -72,7 +71,10 @@ public class PlayerMove implements Listener {
 					// Check if player was knocked outside bounds
 					if (gm.knockedBy.containsKey(p) && !gm.knockedBy.get(p).getName().equals(p.getName())) {
 						Player killer = gm.knockedBy.get(p);
-						Utils.increasePlayerScore(killer, arena);
+						if (arena.getMode() == Mode.FFA)
+							Utils.increasePlayerScore(killer, arena);
+						else
+							Utils.increaseTeamScore(arena, arena.getPlayerTeam(killer));
 
 						Utils.addFrag(killer, plugin.playerStats);
 						for (Player player : arena.getAllPlayers()) {

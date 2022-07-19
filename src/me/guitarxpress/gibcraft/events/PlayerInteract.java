@@ -139,6 +139,25 @@ public class PlayerInteract implements Listener {
 
 					Random random = new Random();
 
+					// Get arena score and increase shooter's score by 1
+					if (arena.getMode() == Mode.FFA)
+						arena.increaseScore(p);
+					else
+						arena.increaseTeamScore(arena.getPlayerTeam(p));
+
+					Utils.addFrag(p, plugin.playerStats);
+					p.playSound(p.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1f, 1f);
+
+					// Check if it was last kill needed to end game
+					if (arena.getMode() == Mode.FFA) {
+						if (arena.getScores().get(p) >= am.maxFrags)
+							am.arenaTimer.put(arena, 0);
+					} else {
+						if (arena.getTeamScore("Red") >= am.maxFrags || arena.getTeamScore("Blue") >= am.maxFrags) {
+							am.arenaTimer.put(arena, 0);
+						}
+					}
+
 					// Send death message to all in game players
 					if (!plugin.deathMessages1.isEmpty() && !plugin.deathMessages2.isEmpty())
 						for (Player player : arena.getAllPlayers()) {
@@ -151,20 +170,11 @@ public class PlayerInteract implements Listener {
 																	.get(random.nextInt(plugin.deathMessages2.size()))
 															: ""),
 											hit.getName(), p.getName())));
+							if (arena.getMode() == Mode.FFA)
+								am.createScoreboardFFA(p);
+							else
+								am.createScoreboardDuos(p);
 						}
-
-					// Get arena score and increase shooter's score by 1
-					if (arena.getMode() == Mode.FFA)
-						arena.increaseScore(p);
-					else
-						arena.increaseTeamScore(arena.getPlayerTeam(p));
-
-					Utils.addFrag(p, plugin.playerStats);
-					p.playSound(p.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1f, 1f);
-
-					// Check if it was last kill needed to end game
-					if (arena.getScores().get(p) >= am.maxFrags)
-						am.arenaTimer.put(arena, 0);
 
 					// Change player gamemode to spectator instead of actually killing them
 					hit.setGameMode(GameMode.SPECTATOR);
@@ -183,7 +193,8 @@ public class PlayerInteract implements Listener {
 								&& ePlayer.getName() != p.getName())
 							return;
 
-						gm.knockedBy.put((Player) e, p);
+						gm.knockedBy.put(ePlayer, p);
+						gm.knockedTimeout.put(ePlayer, System.currentTimeMillis() + 1000);
 
 						Vector difference = startLoc.toVector().subtract(hitLoc.toVector());
 						Vector dir;

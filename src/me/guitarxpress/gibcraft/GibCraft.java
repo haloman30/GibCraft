@@ -34,6 +34,7 @@ import me.guitarxpress.gibcraft.events.EntityDamage;
 import me.guitarxpress.gibcraft.events.EntityDamageByEntity;
 import me.guitarxpress.gibcraft.events.EntityRegainHealth;
 import me.guitarxpress.gibcraft.events.FoodLevelChange;
+import me.guitarxpress.gibcraft.events.InventoryClick;
 import me.guitarxpress.gibcraft.events.ItemDrop;
 import me.guitarxpress.gibcraft.events.PacketSend;
 import me.guitarxpress.gibcraft.events.PlayerInteract;
@@ -63,7 +64,7 @@ public class GibCraft extends JavaPlugin {
 	private MySQL sql;
 	private SQLGetter sqlGetter;
 	private FileConfiguration dataCfg;
-	
+
 	private boolean localSave;
 	private boolean loadFromSQL;
 
@@ -110,12 +111,12 @@ public class GibCraft extends JavaPlugin {
 
 		sql = new MySQL(this);
 		sqlGetter = new SQLGetter(this);
-		
+
 		gm = new GameManager(this);
 		am = new ArenaManager(this);
 		guim = new GUIManager(this);
 		cfg = new ConfigClass(this);
-		
+
 		dataCfg = ConfigClass.getDataCfg();
 
 		protocolManager = ProtocolLibrary.getProtocolManager();
@@ -124,8 +125,8 @@ public class GibCraft extends JavaPlugin {
 		try {
 			sql.connect();
 		} catch (ClassNotFoundException | SQLException e) {
-			getServer().getConsoleSender().sendMessage(
-					"§7[§4Gib§6Craft§7] §cCould not connect to SQL Database. Ignore if you don't have one.");
+			getServer().getConsoleSender()
+					.sendMessage("§7[§4Gib§6Craft§7] §cCould not connect to SQL Server. Ignore if you don't have one.");
 		}
 
 		getServer().getPluginManager().registerEvents(new EditMode(this), this);
@@ -141,6 +142,7 @@ public class GibCraft extends JavaPlugin {
 		getServer().getPluginManager().registerEvents(new PlayerInteractAtEntity(this), this);
 		getServer().getPluginManager().registerEvents(new ToggleFlight(this), this);
 		getServer().getPluginManager().registerEvents(new CommandPreprocess(this), this);
+		getServer().getPluginManager().registerEvents(new InventoryClick(this), this);
 		getServer().getPluginManager().registerEvents(guim, this);
 		new PacketSend(this);
 
@@ -170,7 +172,7 @@ public class GibCraft extends JavaPlugin {
 		sql.disconnect();
 		getServer().getConsoleSender().sendMessage("§7[§4Gib§6Craft§7] §cDisabled");
 	}
-	
+
 	public void loadSQLConfig() {
 		sql.setHost(this.getConfig().getString("host"));
 		sql.setPort(this.getConfig().getString("port"));
@@ -183,8 +185,8 @@ public class GibCraft extends JavaPlugin {
 	@SuppressWarnings("unchecked")
 	public void loadData() {
 		localSave = this.getConfig().getBoolean("localSave");
-		loadFromSQL = this.getConfig().getBoolean("loadFromSQL"); 
-		        
+		loadFromSQL = this.getConfig().getBoolean("loadFromSQL");
+
 		if (!loadFromSQL || !sql.isConnected())
 			loadPlayers();
 		else
@@ -250,6 +252,8 @@ public class GibCraft extends JavaPlugin {
 	public void loadPlayers() {
 		cfg.loadPlayerFiles();
 		List<String> players = cfg.getPlayerNameList();
+		if (players == null)
+			return;
 		for (String name : players) {
 			FileConfiguration pCfg = cfg.getPlayerCfg(name);
 			String uuid = pCfg.getString("UUID");
@@ -297,6 +301,8 @@ public class GibCraft extends JavaPlugin {
 	public void loadArenas() {
 		cfg.loadArenaFiles();
 		List<String> arenas = cfg.getArenaNameList();
+		if (arenas == null)
+			return;
 		for (String arena : arenas) {
 			FileConfiguration aCfg = cfg.getArenaCfg(arena);
 			String name = aCfg.getString("Name");
@@ -328,7 +334,7 @@ public class GibCraft extends JavaPlugin {
 			saveArena(arena);
 		}
 	}
-	
+
 	public boolean isLoadFromSQL() {
 		return loadFromSQL;
 	}
@@ -344,13 +350,22 @@ public class GibCraft extends JavaPlugin {
 
 			@Override
 			public void run() {
-				if (SignEvents.signsLoc != null)
+				if (SignEvents.signsLoc != null) {
+					Sign toRemove = null;
 					for (Location loc : SignEvents.signsLoc) {
 						Sign sign = (Sign) loc.getWorld().getBlockAt(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ())
 								.getState();
 						String s = Utils.getNameFromString(sign.getLine(1));
-						SignEvents.updateSign(sign, am, s);
+						if (!am.exists(s)) {
+							toRemove = sign;
+							sign.getBlock().breakNaturally();
+						} else {
+							SignEvents.updateSign(sign, am, s);
+						}
 					}
+					if (toRemove != null)
+						SignEvents.signsLoc.remove(toRemove.getLocation());
+				}
 
 				if (am.arenas != null)
 					for (Arena arena : am.arenas) {
@@ -384,6 +399,11 @@ public class GibCraft extends JavaPlugin {
 							}
 
 							for (Player p : arena.getPlayers()) {
+								if (arena.getMode() == Mode.FFA)
+									am.createScoreboardFFA(p);
+								else
+									am.createScoreboardDuos(p);
+
 								if (playerPowerup.containsKey(p)) {
 									if (p.getLevel() > 0)
 										p.setLevel(p.getLevel() - 1);
@@ -406,11 +426,6 @@ public class GibCraft extends JavaPlugin {
 				for (Arena arena : am.arenas) {
 					if (arena.getStatus() == Status.ONGOING) {
 						for (Player p : arena.getAllPlayers()) {
-							if (arena.getMode() == Mode.FFA)
-								am.createScoreboardFFA(p);
-							else
-								am.createScoreboardDuos(p);
-
 							if (am.isPlayerInArena(p) && !am.isSpectating(p)) {
 								if (PlayerInteract.cooldowns.containsKey(p)) {
 									long millis = System.currentTimeMillis() - PlayerInteract.cooldowns.get(p);

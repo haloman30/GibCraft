@@ -36,7 +36,7 @@ public class SignEvents implements Listener {
 	@EventHandler
 	public void onSignPlace(SignChangeEvent event) {
 		if (event.getPlayer().hasPermission("gib.signs")) {
-			if (event.getBlock().getType() == Material.OAK_WALL_SIGN) {
+			if (event.getBlock().getType().toString().toLowerCase().contains("sign")) {
 				if (!event.getLine(0).equals("[gibcraft]") && !event.getLine(0).equals("[gib]"))
 					return;
 

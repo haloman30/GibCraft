@@ -7,7 +7,6 @@ import java.util.Map;
 import java.util.Random;
 
 import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
@@ -15,6 +14,7 @@ import org.bukkit.entity.Player;
 
 import me.guitarxpress.gibcraft.enums.Mode;
 import me.guitarxpress.gibcraft.enums.Status;
+import me.guitarxpress.gibcraft.utils.Utils;
 
 public class Arena {
 
@@ -30,7 +30,7 @@ public class Arena {
 	private List<Player> allPlayers;
 
 	private List<ArmorStand> powerups;
-	
+
 	private Map<String, List<Player>> teams;
 	private Map<String, Integer> teamScore;
 
@@ -197,53 +197,53 @@ public class Arena {
 			powerups.remove(i);
 		}
 	}
-	
+
 	public Map<String, List<Player>> getTeams() {
 		return this.teams;
 	}
-	
+
 	public void setTeams(Map<String, List<Player>> teams) {
 		this.teams = teams;
 	}
-	
+
 	public void addToTeam(String team, Player player) {
 		List<Player> teamPlayers = teams.get(team);
 		teamPlayers.add(player);
 		teams.put(team, teamPlayers);
 	}
-	
+
 	public void addToTeam(String team, List<Player> players) {
 		teams.put(team, players);
 	}
-	
+
 	public void removeFromTeam(String team, Player player) {
 		List<Player> teamPlayers = teams.get(team);
 		teamPlayers.remove(player);
 		teams.put(team, teamPlayers);
 	}
-	
+
 	public void removeTeam(String team) {
 		teams.remove(team);
 	}
-	
+
 	public boolean teamExists(String team) {
 		return teams.containsKey(team);
 	}
-	
+
 	public List<Player> getTeamPlayers(String team) {
 		return teams.get(team);
 	}
-	
+
 	public void createTeam(String team) {
 		teams.put(team, new ArrayList<>());
 		teamScore.put(team, 0);
 	}
-	
+
 	public void increaseTeamScore(String team) {
 		int score = teamScore.get(team);
 		teamScore.put(team, ++score);
 	}
-	
+
 	/*
 	 * @return team if player is on a team. Null otherwise.
 	 */
@@ -258,7 +258,7 @@ public class Arena {
 	public Map<String, Integer> getTeamScores() {
 		return teamScore;
 	}
-	
+
 	public int getTeamScore(String team) {
 		return teamScore.get(team);
 	}
@@ -266,13 +266,18 @@ public class Arena {
 	public void setTeamScore(Map<String, Integer> teamScore) {
 		this.teamScore = teamScore;
 	}
-	
+
 	public int getTeamPlayerCount(String team) {
 		return teamExists(team) ? getTeamPlayers(team).size() : 0;
 	}
+	
+	public boolean areBoundariesSet() {
+		return (boundaries[0] != null && boundaries[1] != null) ? true : false;
+	}
 
 	/*
-	 * @return random spawn if any was found. Null otherwise. Should never return null as long as the arena is built correctly.
+	 * @return random spawn if any was found. Null otherwise. Should never return
+	 * null as long as the arena is built correctly.
 	 */
 	public Location selectRandomSpawn() {
 		World w = boundaries[0].getWorld();
@@ -300,9 +305,8 @@ public class Arena {
 			int y = r.nextInt((topBlockY - 1) - bottomBlockY) + bottomBlockY;
 			int z = r.nextInt(topBlockZ - bottomBlockZ) + bottomBlockZ;
 			if (i < blocks) {
-				if (w.getBlockAt(x, y, z).getType() != Material.AIR) {
-					if (w.getBlockAt(x, y + 1, z).getType() == Material.AIR
-							&& w.getBlockAt(x, y + 2, z).getType() == Material.AIR) {
+				if (!Utils.validTypes.contains(w.getBlockAt(x, y, z).getType())) {
+					if (Utils.isValidSpawn(w, x, y, z)) {
 						loc = new Location(w, x + .5, y + 1, z + .5);
 						for (Entity e : w.getNearbyEntities(loc, 8, 8, 8)) {
 							if (e instanceof Player) {
@@ -310,9 +314,8 @@ public class Arena {
 								break;
 							}
 						}
-						if (safeSpawn) {
+						if (safeSpawn)
 							return loc;
-						}
 					}
 				}
 				i++;

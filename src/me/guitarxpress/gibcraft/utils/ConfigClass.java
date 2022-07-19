@@ -40,7 +40,7 @@ public class ConfigClass {
 		this.plugin = plugin;
 
 		am = plugin.getArenaManager();
-		
+
 		arenaFolder = new File(plugin.getDataFolder(), arenaPath);
 		playerFolder = new File(plugin.getDataFolder(), playerPath);
 
@@ -76,6 +76,8 @@ public class ConfigClass {
 	}
 
 	public void loadArenaFiles() {
+		if (getArenaNameList() == null)
+			return;
 		for (String arena : getArenaNameList()) {
 			File arenaFile = new File(arenaFolder, arena + ".yml");
 			if (!arenaFile.exists())
@@ -111,7 +113,7 @@ public class ConfigClass {
 					"§c[" + plugin.getName() + "] Failed to save file for arena: " + name + " §e-> §c" + e);
 		}
 	}
-	
+
 	public void deleteArena(String name) {
 		File arenaFile = getArenaFile(name);
 		arenaFile.delete();
@@ -135,6 +137,8 @@ public class ConfigClass {
 	}
 
 	public void loadPlayerFiles() {
+		if (getPlayerNameList() == null)
+			return;
 		for (String name : getPlayerNameList()) {
 			File playerFile = new File(playerFolder, name + ".yml");
 			try {
@@ -175,6 +179,8 @@ public class ConfigClass {
 
 	public List<String> getArenaNameList() {
 		String[] array = arenaFolder.list();
+		if (array == null)
+			return null;
 		List<String> arenas = new ArrayList<>();
 		for (int i = 0; i < array.length; i++) {
 			arenas.add(array[i].substring(0, array[i].length() - 4));
@@ -184,6 +190,8 @@ public class ConfigClass {
 
 	public List<String> getPlayerNameList() {
 		String[] array = playerFolder.list();
+		if (array == null)
+			return null;
 		List<String> players = new ArrayList<>();
 		for (int i = 0; i < array.length; i++) {
 			players.add(array[i].substring(0, array[i].length() - 4));

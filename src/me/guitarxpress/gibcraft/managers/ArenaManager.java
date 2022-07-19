@@ -428,9 +428,9 @@ public class ArenaManager {
 		arena.getSpectators().clear();
 		arena.clearScores();
 
-		Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, () -> {
+//		Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, () -> {
 			arena.setStatus(Status.JOINABLE);
-		}, 2 * 20);
+//		}, 2 * 20);
 	}
 
 	public void end(Arena arena) {
@@ -481,9 +481,9 @@ public class ArenaManager {
 		arena.getSpectators().clear();
 		arena.clearScores();
 
-		Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, () -> {
+//		Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, () -> {
 			arena.setStatus(Status.JOINABLE);
-		}, 2 * 20);
+//		}, 2 * 20);
 	}
 
 	public void createScoreboardFFA(Player p) {
@@ -520,8 +520,8 @@ public class ArenaManager {
 
 		Score sc1 = obj.getScore("§4Red Team");
 		sc1.setScore(arena.getTeamScore("Red"));
-//		Score sc2 = obj.getScore("§3Blue Team");
-//		sc2.setScore(arena.getTeamScore("Blue"));
+		Score sc2 = obj.getScore("§3Blue Team");
+		sc2.setScore(arena.getTeamScore("Blue"));
 
 		p.setScoreboard(board);
 	}

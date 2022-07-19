@@ -149,27 +149,33 @@ public class Commands implements CommandExecutor {
 						if (am.isLobbySet()) {
 							if (am.exists(args[1])) {
 								Arena arena = am.getArena(args[1]);
-								if (!arena.isFull()) {
-									if (arena.getStatus() == Status.JOINABLE || arena.getStatus() == Status.STARTING) {
-										if (!am.isPlayerInArena(p)) {
-											if (arena.getMode() == Mode.DUOS) {
-												plugin.getGUIManager().openTeamsGUI(p, arena.getName());
+								if (arena.areBoundariesSet()) {
+									if (!arena.isFull()) {
+										if (arena.getStatus() == Status.JOINABLE
+												|| arena.getStatus() == Status.STARTING) {
+											if (!am.isPlayerInArena(p)) {
+												if (arena.getMode() == Mode.DUOS) {
+													plugin.getGUIManager().openTeamsGUI(p, arena.getName());
+												} else {
+													am.addPlayerToArena(p, arena);
+												}
 											} else {
-												am.addPlayerToArena(p, arena);
+												p.sendMessage(prefix() + "§cYou're already in a game.");
 											}
+										} else if (arena.getStatus() == Status.ONGOING
+												|| arena.getStatus() == Status.STARTUP) {
+											p.sendMessage(
+													prefix() + "§cThat game has already started. Spectate with §6/"
+															+ cmd + " spectate " + args[1] + "§c.");
 										} else {
-											p.sendMessage(prefix() + "§cYou're already in a game.");
+											p.sendMessage(prefix() + "§cYou can't join this arena right now.");
 										}
-									} else if (arena.getStatus() == Status.ONGOING
-											|| arena.getStatus() == Status.STARTUP) {
-										p.sendMessage(prefix() + "§cThat game has already started. Spectate with §6/"
-												+ cmd + " spectate " + args[1] + "§c.");
 									} else {
-										p.sendMessage(prefix() + "§cYou can't join this arena right now.");
+										p.sendMessage(prefix() + "§cGame is full. Spectate with §6/" + cmd
+												+ " spectate " + args[1] + "§c.");
 									}
 								} else {
-									p.sendMessage(prefix() + "§cGame is full. Spectate with §6/" + cmd + " spectate "
-											+ args[1] + "§c.");
+									p.sendMessage(prefix() + "§cThis arena does not have boundaries set up.");
 								}
 							} else {
 								p.sendMessage(prefix() + "§cArena doesn't exist.");
@@ -208,9 +214,7 @@ public class Commands implements CommandExecutor {
 							Arena arena = am.getArena(args[1]);
 							if (arena.getStatus() != Status.ONGOING) {
 								am.toggleEditMode(p, args[1]);
-								p.sendMessage(prefix()
-										+ "§eConsider updating the arena status before and after you edit with:\n"
-										+ "§6/" + cmd + " setstatus «arena» «state»§e.");
+								p.sendMessage(prefix() + "§eToggled edit mode.");
 							} else {
 								p.sendMessage(prefix() + "§cPlease wait for the game to finish.");
 							}

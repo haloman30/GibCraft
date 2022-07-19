@@ -27,6 +27,7 @@ public class GameManager {
 	int fadeOut = 2;
 
 	public Map<Player, Player> knockedBy = new HashMap<>();
+	public Map<Player, Long> knockedTimeout = new HashMap<>();
 
 	public GameManager(GibCraft plugin) {
 		this.plugin = plugin;

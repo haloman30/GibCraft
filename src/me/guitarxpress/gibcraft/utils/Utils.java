@@ -1,6 +1,7 @@
 package me.guitarxpress.gibcraft.utils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -12,6 +13,7 @@ import org.bukkit.FireworkEffect;
 import org.bukkit.FluidCollisionMode;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.World;
 import org.bukkit.FireworkEffect.Type;
@@ -27,6 +29,12 @@ import me.guitarxpress.gibcraft.Arena;
 import me.guitarxpress.gibcraft.Stats;
 
 public class Utils {
+
+	public static List<Material> validTypes = new ArrayList<>(Arrays.asList(Material.AIR, Material.GRASS,
+			Material.TALL_GRASS, Material.POPPY, Material.SUNFLOWER, Material.OXEYE_DAISY, Material.DANDELION,
+			Material.BLUE_ORCHID, Material.ALLIUM, Material.AZURE_BLUET, Material.ORANGE_TULIP, Material.PINK_TULIP,
+			Material.RED_TULIP, Material.WHITE_TULIP, Material.CORNFLOWER, Material.LILY_OF_THE_VALLEY,
+			Material.BROWN_MUSHROOM, Material.RED_MUSHROOM));
 
 	public static boolean playerInArea(Location start, Location end, Player player) {
 
@@ -52,8 +60,9 @@ public class Utils {
 
 	public static boolean hitPlayer(Location start, double maxDistance, World world, Player p) {
 		RayTraceResult result = world.rayTrace(start, p.getLocation().getDirection(), maxDistance,
-				FluidCollisionMode.NEVER, true, 0.1, (e) -> e != null && e instanceof Player
-						&& !e.getName().equals(p.getName()) && ((Player) e).getGameMode() != GameMode.SPECTATOR);
+				FluidCollisionMode.NEVER, true, 0.1,
+				(e) -> e != null && e instanceof Player && !e.getName().equals(p.getName()) && (e instanceof Player)
+						&& ((Player) e).getGameMode() != GameMode.SPECTATOR);
 
 		if (result == null)
 			return false;
@@ -74,7 +83,8 @@ public class Utils {
 
 	public static RayTraceResult getHitResult(Location start, double maxDistance, World world, Player p) {
 		RayTraceResult result = world.rayTrace(start, p.getLocation().getDirection(), maxDistance,
-				FluidCollisionMode.NEVER, true, 0.1, (e) -> e != null && !e.getName().equals(p.getName()));
+				FluidCollisionMode.NEVER, true, 0.1, (e) -> e != null && !e.getName().equals(p.getName())
+						&& (e instanceof Player) && ((Player) e).getGameMode() != GameMode.SPECTATOR);
 		return result;
 	}
 
@@ -304,6 +314,20 @@ public class Utils {
 			sb.append(string.charAt(i));
 		}
 		return sb.toString().trim();
+	}
+
+	public static boolean isValidSpawn(World w, int x, int y, int z) {
+		return Utils.validTypes.contains(w.getBlockAt(x, y + 1, z).getType())
+				&& Utils.validTypes.contains(w.getBlockAt(x, y + 2, z).getType())
+				&& Utils.validTypes.contains(w.getBlockAt(x + 1, y + 2, z).getType())
+				&& Utils.validTypes.contains(w.getBlockAt(x, y + 2, z + 1).getType())
+				&& Utils.validTypes.contains(w.getBlockAt(x - 1, y + 2, z).getType())
+				&& Utils.validTypes.contains(w.getBlockAt(x, y + 2, z - 1).getType())
+				&& Utils.validTypes.contains(w.getBlockAt(x + 1, y + 2, z + 1).getType())
+				&& Utils.validTypes.contains(w.getBlockAt(x + 1, y + 2, z - 1).getType())
+				&& Utils.validTypes.contains(w.getBlockAt(x - 1, y + 2, z + 1).getType())
+				&& Utils.validTypes.contains(w.getBlockAt(x - 1, y + 2, z - 1).getType())
+				&& Utils.validTypes.contains(w.getBlockAt(x, y + 3, z).getType());
 	}
 
 }
