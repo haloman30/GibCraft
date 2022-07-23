@@ -4,8 +4,6 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
-import me.guitarxpress.gibcraft.GibCraft;
-
 public class MySQL {
 
 	private String host;
@@ -16,10 +14,6 @@ public class MySQL {
 	private boolean useSSL;
 
 	private Connection connection;
-
-	public MySQL(GibCraft plugin) {
-
-	}
 
 	public boolean isConnected() {
 		return connection != null;

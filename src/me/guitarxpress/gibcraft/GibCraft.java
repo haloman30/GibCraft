@@ -109,7 +109,7 @@ public class GibCraft extends JavaPlugin {
 
 		ItemManager.init();
 
-		sql = new MySQL(this);
+		sql = new MySQL();
 		sqlGetter = new SQLGetter(this);
 
 		gm = new GameManager(this);

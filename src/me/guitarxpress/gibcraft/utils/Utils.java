@@ -28,7 +28,7 @@ import org.bukkit.util.Vector;
 import me.guitarxpress.gibcraft.Arena;
 import me.guitarxpress.gibcraft.Stats;
 
-public class Utils {
+public final class Utils {
 
 	public static List<Material> validTypes = new ArrayList<>(Arrays.asList(Material.AIR, Material.GRASS,
 			Material.TALL_GRASS, Material.POPPY, Material.SUNFLOWER, Material.OXEYE_DAISY, Material.DANDELION,
@@ -173,6 +173,8 @@ public class Utils {
 			return ChatColor.YELLOW;
 		case 3:
 			return ChatColor.GREEN;
+		default:
+			break;
 		}
 		return ChatColor.WHITE;
 	}
@@ -187,6 +189,8 @@ public class Utils {
 			return "Yellow";
 		case 3:
 			return "Green";
+		default:
+			break;
 		}
 		return "";
 	}
@@ -201,6 +205,8 @@ public class Utils {
 			return "§e";
 		case 3:
 			return "§a";
+		default:
+			break;
 		}
 		return "";
 	}
@@ -215,6 +221,8 @@ public class Utils {
 			return Color.YELLOW;
 		case 'G':
 			return Color.LIME;
+		default:
+			break;
 		}
 		return Color.WHITE;
 	}
@@ -306,12 +314,12 @@ public class Utils {
 	}
 
 	public static String getArenaNameFromString(String string) {
-		string = string.substring(2);
+		String s = string.substring(2);
 		StringBuilder sb = new StringBuilder();
-		for (int i = 0; i < string.length(); i++) {
-			if (string.charAt(i) == '-')
+		for (int i = 0; i < s.length(); i++) {
+			if (s.charAt(i) == '-')
 				break;
-			sb.append(string.charAt(i));
+			sb.append(s.charAt(i));
 		}
 		return sb.toString().trim();
 	}

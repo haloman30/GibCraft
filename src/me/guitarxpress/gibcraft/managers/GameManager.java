@@ -70,9 +70,7 @@ public class GameManager {
 	}
 
 	public boolean hasEnoughPlayers(Arena arena) {
-		if (arena.getPlayerCount() >= arena.getMode().minPlayers())
-			return true;
-		return false;
+		return arena.getPlayerCount() >= arena.getMode().minPlayers();
 	}
 
 	public void sendStartNotification(Arena arena, String string) {

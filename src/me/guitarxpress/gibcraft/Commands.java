@@ -67,8 +67,7 @@ public class Commands implements CommandExecutor {
 					p.sendMessage(prefix() + "§ePlugin being developed by §4GuitarXpress§e." + "\n- Plugin Version: §4"
 							+ plugin.getDescription().getVersion() + "\n§e- API Version: §4"
 							+ plugin.getDescription().getAPIVersion()
-							+ "\n§ePlease to submit any feedback or bugs on discord.\n"
-							+ "\n§cNote that your stats may be reset during the beta phase.§e"
+							+ "\n§ePlease to submit any feedback or bugs on Github or discord.\n"
 							+ "\nFor help use §6/gib help§e.");
 
 					// List
