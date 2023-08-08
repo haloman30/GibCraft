@@ -63,7 +63,7 @@ public class SignEvents implements Listener {
 					Location loc = new Location(world, x, y, z);
 					signsLoc.add(loc);
 				} else {
-					event.getPlayer().sendMessage("§7[§4Gib§6Craft§7] §cInvalid Arena.");
+					event.getPlayer().sendMessage("§7[§6Gib§6Craft§7] §cInvalid Arena.");
 					event.setCancelled(true);
 					event.getBlock().breakNaturally();
 				}
@@ -79,7 +79,7 @@ public class SignEvents implements Listener {
 				if (event.getPlayer().hasPermission("gib.signs")) {
 					signsLoc.remove(sign.getLocation());
 				} else {
-					event.getPlayer().sendMessage("§7[§4Gib§6Craft§7] §cSorry! You can't break these signs.");
+					event.getPlayer().sendMessage("§7[§6Gib§6Craft§7] §cSorry! You can't break these signs.");
 					event.setCancelled(true);
 				}
 			}

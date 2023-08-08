@@ -87,10 +87,20 @@ public class PlayerMove implements Listener {
 						}
 					}
 					p.setGameMode(GameMode.SPECTATOR);
-					Utils.spawnFireworks(p.getLocation().clone().add(new Vector(0, 1.5, 0)),
-							p.getInventory().getItemInMainHand() == null ? Color.WHITE
-									: Utils.colorFromString(
-											p.getInventory().getItemInMainHand().getItemMeta().getLore().get(0)));
+					
+					Color firework_color = Color.WHITE;
+					
+					try
+					{
+						if (p.getInventory().getItemInMainHand() != null)
+						{
+							firework_color = Utils.colorFromString(p.getInventory().getItemInMainHand().getItemMeta().getLore().get(0));
+						}
+					}
+					catch (Exception ex) {}
+					
+					Utils.spawnFireworks(p.getLocation().clone().add(new Vector(0, 1.5, 0)), firework_color);
+					
 					gm.respawnPlayer(p, arena);
 				}
 			}

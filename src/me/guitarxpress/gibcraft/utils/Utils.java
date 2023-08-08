@@ -35,6 +35,8 @@ public final class Utils {
 			Material.BLUE_ORCHID, Material.ALLIUM, Material.AZURE_BLUET, Material.ORANGE_TULIP, Material.PINK_TULIP,
 			Material.RED_TULIP, Material.WHITE_TULIP, Material.CORNFLOWER, Material.LILY_OF_THE_VALLEY,
 			Material.BROWN_MUSHROOM, Material.RED_MUSHROOM));
+	
+	public static double ray_size = 0.1;
 
 	public static boolean playerInArea(Location start, Location end, Player player) {
 
@@ -60,7 +62,7 @@ public final class Utils {
 
 	public static boolean hitPlayer(Location start, double maxDistance, World world, Player p) {
 		RayTraceResult result = world.rayTrace(start, p.getLocation().getDirection(), maxDistance,
-				FluidCollisionMode.NEVER, true, 0.1,
+				FluidCollisionMode.NEVER, true, ray_size,
 				(e) -> e != null && e instanceof Player && !e.getName().equals(p.getName()) && (e instanceof Player)
 						&& ((Player) e).getGameMode() != GameMode.SPECTATOR);
 
@@ -83,7 +85,7 @@ public final class Utils {
 
 	public static RayTraceResult getHitResult(Location start, double maxDistance, World world, Player p) {
 		RayTraceResult result = world.rayTrace(start, p.getLocation().getDirection(), maxDistance,
-				FluidCollisionMode.NEVER, true, 0.1, (e) -> e != null && !e.getName().equals(p.getName())
+				FluidCollisionMode.NEVER, true, ray_size, (e) -> e != null && !e.getName().equals(p.getName())
 						&& (e instanceof Player) && ((Player) e).getGameMode() != GameMode.SPECTATOR);
 		return result;
 	}

@@ -32,6 +32,9 @@ deathMessages2:
    - "I think they might need glasses."
    - "Lmao."
    - "Hold that L."
+   
+fell_off_message: "&f%s fell off. Literally."
+knocked_off_message: "&f%s knocked %s off the arena!"
 
 ### SQL Connection ### Ignore if you do NOT have an SQL Server. ###   
 host: "localhost" # SQL Host IP

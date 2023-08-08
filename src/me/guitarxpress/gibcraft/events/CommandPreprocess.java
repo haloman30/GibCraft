@@ -26,21 +26,29 @@ public class CommandPreprocess implements Listener {
 
 		if (!am.isPlayerInArena(p))
 			return;
-
-		if (am.isSpectating(p)) {
-			if (!event.getMessage().equalsIgnoreCase("/gib spectate " + am.getPlayerArena(p).getName())
-					&& !event.getMessage().equalsIgnoreCase("/gibcraft spectate " + am.getPlayerArena(p).getName())) {
-				p.sendMessage(Commands.prefix() + "§cYou can't do that inside the arena.");
-				event.setCancelled(true);
-			}
-		} else {
-			if (!event.getMessage().equalsIgnoreCase("/gib leave")
-					&& !event.getMessage().equalsIgnoreCase("/gibcraft leave")) {
-				p.sendMessage(Commands.prefix() + "§cYou can't do that inside the arena.");
-				event.setCancelled(true);
+		
+		String[] valid_commands = {
+			"/gibcraft spectate",
+			"/gibcraft leave",
+			"/gib spectate",
+			"/gib leave"
+		};
+		
+		boolean command_permitted = false;
+		
+		for (String valid_command : valid_commands)
+		{
+			if (event.getMessage().toLowerCase().startsWith(valid_command))
+			{
+				command_permitted = true;
 			}
 		}
-
+		
+		if (!command_permitted)
+		{
+			p.sendMessage(Commands.prefix() + "§cYou can't do that inside the arena.");
+			event.setCancelled(true);
+		}
 	}
 
 }

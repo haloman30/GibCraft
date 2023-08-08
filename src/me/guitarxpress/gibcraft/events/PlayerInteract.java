@@ -115,6 +115,11 @@ public class PlayerInteract implements Listener {
 
 					if (hit.getGameMode() == GameMode.SPECTATOR)
 						return;
+					
+					if (!am.isPlayerInArena(hit) || am.isSpectating(hit))
+					{
+						return;
+					}
 
 					if (arena.getMode() == Mode.DUOS
 							&& (arena.getPlayerTeam(hit) == arena.getPlayerTeam(p) && arena.getPlayerTeam(p) != null))
@@ -187,7 +192,17 @@ public class PlayerInteract implements Listener {
 						if (!(e instanceof Player))
 							continue;
 
-						Player ePlayer = (Player) e;
+						Player ePlayer = (Player)e;
+						
+						if (arena.getSpectators().contains(ePlayer))
+						{
+							continue;
+						}
+						
+						if (!am.isPlayerInArena(ePlayer))
+						{
+							continue;
+						}
 
 						if (arena.getPlayerTeam(p) != null && arena.getPlayerTeam(ePlayer) == arena.getPlayerTeam(p)
 								&& ePlayer.getName() != p.getName())

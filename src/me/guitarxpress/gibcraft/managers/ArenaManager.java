@@ -87,6 +87,7 @@ public class ArenaManager {
 		if (!isLobbySet())
 			return false;
 		player.teleport(lobby);
+		
 		return true;
 	}
 
@@ -220,10 +221,10 @@ public class ArenaManager {
 		for (Player p : arena.getAllPlayers())
 			p.sendMessage(Commands.prefix() + player.getName() + " §eis no longer spectating.");
 
+		toLobby(player);
+		
 		player.setGameMode(oldMode.get(player));
 		oldMode.remove(player);
-
-		toLobby(player);
 	}
 
 	/*

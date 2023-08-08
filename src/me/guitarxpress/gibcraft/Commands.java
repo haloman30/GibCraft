@@ -10,6 +10,7 @@ import org.bukkit.entity.Player;
 import me.guitarxpress.gibcraft.enums.Mode;
 import me.guitarxpress.gibcraft.enums.Status;
 import me.guitarxpress.gibcraft.managers.ArenaManager;
+import me.guitarxpress.gibcraft.utils.Utils;
 
 public class Commands implements CommandExecutor {
 
@@ -88,16 +89,23 @@ public class Commands implements CommandExecutor {
 					// Leave
 				} else if (args[0].equalsIgnoreCase("leave")) {
 					if (p.hasPermission(cmd + ".play")) {
-						if (am.isPlayerInArena(p)) {
+						if (am.isPlayerInArena(p)) 
+						{
 							Arena arena = am.getPlayerArena(p);
-							if (p.getGameMode() != GameMode.SPECTATOR) {
-								am.removePlayerFromArena(p, arena);
-								p.sendMessage(prefix() + "§eYou left the game.");
-							} else {
+							
+							if (arena.getSpectators().contains(p)) 
+							{
 								am.removeSpectatorFromArena(p, arena);
 								p.sendMessage(prefix() + "§eYou left spectators.");
+							} 
+							else 
+							{
+								am.removePlayerFromArena(p, arena);
+								p.sendMessage(prefix() + "§eYou left the game.");
 							}
-						} else {
+						} 
+						else 
+						{
 							p.sendMessage(prefix() + "§cYou're not in a game.");
 						}
 					}
@@ -139,6 +147,38 @@ public class Commands implements CommandExecutor {
 							p.sendMessage(prefix() + "§aRemoved arena §6" + args[1] + "§a.");
 						} else {
 							p.sendMessage(prefix() + "§cArena §6" + args[1] + " §cdoesn't exist.");
+						}
+					}
+
+					// TP
+				} else if (args[0].equalsIgnoreCase("tp")) {
+					if (p.hasPermission(cmd + ".edit")) 
+					{
+						if (am.exists(args[1])) 
+						{
+							Arena arena = am.getArena(args[1]);
+							p.teleport(arena.selectRandomSpawn());
+							p.sendMessage(prefix() + "§aTeleported to arena §6" + args[1] + "§a.");
+						} 
+						else 
+						{
+							p.sendMessage(prefix() + "§cArena §6" + args[1] + " §cdoesn't exist.");
+						}
+					}
+
+					// Join
+				} else if (args[0].equalsIgnoreCase("raysize")) {
+					if (p.hasPermission(cmd + ".admin")) 
+					{
+						try
+						{
+							double ray_size = Double.valueOf(args[1]);
+							Utils.ray_size = ray_size;
+							p.sendMessage(prefix() + "§aRay size set to §6" + ray_size + "§a.");
+						}
+						catch (Exception ex)
+						{
+							p.sendMessage(prefix() + "§cCould not parse §6" + args[1] + " §c as a double for ray size.");
 						}
 					}
 
@@ -269,6 +309,7 @@ public class Commands implements CommandExecutor {
 	}
 
 	public static String prefix() {
-		return "§7[§4Gib§6Craft§7] ";
+		//return "§7[§4Gib§6Craft§7] ";
+		return "§7[§6GibCraft§7] ";
 	}
 }

@@ -1,8 +1,8 @@
 main: me.guitarxpress.gibcraft.GibCraft
 name: GibCraft
-version: 1.0.0
-author: GuitarXpress
-api-version: 1.18
+version: 1.1.0
+authors: [GuitarXpress, haloman30]
+api-version: 1.20
 description: A minigame based on Ratz InstaGib and Quake. 
 depend: [ProtocolLib]
 

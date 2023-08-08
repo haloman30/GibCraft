@@ -39,6 +39,7 @@ import me.guitarxpress.gibcraft.events.ItemDrop;
 import me.guitarxpress.gibcraft.events.PacketSend;
 import me.guitarxpress.gibcraft.events.PlayerInteract;
 import me.guitarxpress.gibcraft.events.PlayerInteractAtEntity;
+import me.guitarxpress.gibcraft.events.PlayerJoin;
 import me.guitarxpress.gibcraft.events.PlayerMove;
 import me.guitarxpress.gibcraft.events.PlayerQuit;
 import me.guitarxpress.gibcraft.events.SignEvents;
@@ -133,6 +134,7 @@ public class GibCraft extends JavaPlugin {
 		getServer().getPluginManager().registerEvents(new EntityDamageByEntity(this), this);
 		getServer().getPluginManager().registerEvents(new EntityDamage(this), this);
 		getServer().getPluginManager().registerEvents(new ItemDrop(this), this);
+		getServer().getPluginManager().registerEvents(new PlayerJoin(this), this);
 		getServer().getPluginManager().registerEvents(new PlayerQuit(this), this);
 		getServer().getPluginManager().registerEvents(new PlayerInteract(this), this);
 		getServer().getPluginManager().registerEvents(new PlayerMove(this), this);
@@ -398,7 +400,21 @@ public class GibCraft extends JavaPlugin {
 									am.endDuos(arena);
 							}
 
-							for (Player p : arena.getPlayers()) {
+							for (Player p : arena.getPlayers()) 
+							{
+								if (arena.getMode() == Mode.FFA)
+									am.createScoreboardFFA(p);
+								else
+									am.createScoreboardDuos(p);
+
+								if (playerPowerup.containsKey(p)) {
+									if (p.getLevel() > 0)
+										p.setLevel(p.getLevel() - 1);
+								}
+							}
+							
+							for (Player p : arena.getSpectators()) 
+							{
 								if (arena.getMode() == Mode.FFA)
 									am.createScoreboardFFA(p);
 								else

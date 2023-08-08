@@ -61,11 +61,12 @@ public class TabComplete implements TabCompleter {
 					}
 					if (player.hasPermission(cmd + ".edit")) {
 						list.add("edit");
+						list.add("tp");
 					}
 				} else if (args.length == 2) {
 					if (args[0].equalsIgnoreCase("join") || args[0].equalsIgnoreCase("spectate")
 							|| args[0].equalsIgnoreCase("setstatus") || args[0].equalsIgnoreCase("delete")
-							|| args[0].equalsIgnoreCase("edit")) {
+							|| args[0].equalsIgnoreCase("edit") || args[0].equalsIgnoreCase("tp")) {
 						if (player.hasPermission(cmd + ".play") || player.hasPermission(cmd + ".spectate")
 								|| player.hasPermission(cmd + ".setstatus") || player.hasPermission(cmd + ".delete")
 								|| player.hasPermission(cmd + ".edit")) {

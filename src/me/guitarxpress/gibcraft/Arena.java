@@ -13,10 +13,17 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 
 import me.guitarxpress.gibcraft.enums.Mode;
+import me.guitarxpress.gibcraft.enums.PowerUpPointType;
 import me.guitarxpress.gibcraft.enums.Status;
 import me.guitarxpress.gibcraft.utils.Utils;
 
-public class Arena {
+public class Arena 
+{
+	public class PowerUpPoint
+	{
+		public Location location;
+		public PowerUpPointType type;
+	}
 
 	private String name;
 	private Status status;
@@ -33,6 +40,9 @@ public class Arena {
 
 	private Map<String, List<Player>> teams;
 	private Map<String, Integer> teamScore;
+	
+	public ArrayList<Location> spawn_points;
+	public ArrayList<PowerUpPoint> powerup_points;
 
 	public Arena(String name, Status status, Mode mode) {
 		this.name = name;
@@ -279,7 +289,14 @@ public class Arena {
 	 * @return random spawn if any was found. Null otherwise. Should never return
 	 * null as long as the arena is built correctly.
 	 */
-	public Location selectRandomSpawn() {
+	public Location selectRandomSpawn() 
+	{
+		if (spawn_points != null && spawn_points.size() > 0)
+		{
+			Random random = new Random();
+			return spawn_points.get(random.nextInt(spawn_points.size()));
+		}
+		
 		World w = boundaries[0].getWorld();
 		Location start = boundaries[0];
 		Location end = boundaries[1];

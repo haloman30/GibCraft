@@ -19,6 +19,8 @@ public class ItemManager {
 
 	public static ItemStack quitEdit;
 	public static ItemStack boundariesItem;
+	public static ItemStack spawnPointsItem;
+	public static ItemStack powerupPointsItem;
 
 	public static ItemStack[] editMode = new ItemStack[9];
 	public static ItemStack[] guns = new ItemStack[4];
@@ -48,6 +50,8 @@ public class ItemManager {
 		createGunGreen();
 		createQuitEdit();
 		createBoundariesItem();
+		createSpawnPointsItem();
+		createPowerupPointsItem();
 		createRedTeam();
 		createBlueTeam();
 		createFiller();
@@ -73,6 +77,8 @@ public class ItemManager {
 		blueOutfit[3] = blueBoots;
 
 		editMode[0] = boundariesItem;
+		editMode[1] = spawnPointsItem;
+		editMode[2] = powerupPointsItem;
 		editMode[8] = quitEdit;
 		guns[0] = gunRed;
 		guns[1] = gunBlue;
@@ -190,6 +196,32 @@ public class ItemManager {
 		meta.setLore(lore);
 		item.setItemMeta(meta);
 		boundariesItem = item;
+	}
+
+	private static void createSpawnPointsItem() {
+		ItemStack item = new ItemStack(Material.LIGHT_BLUE_STAINED_GLASS);
+		ItemMeta meta = item.getItemMeta();
+		meta.setDisplayName("§bEdit Spawn Points");
+		List<String> lore = new ArrayList<>();
+		lore.add("§6Right Click §7to add a new spawn point.");
+		lore.add("§6Left Click §7to remove a spawn point.");
+		lore.add("§6Shift-Left Click §7to remove ALL spawn points.");
+		meta.setLore(lore);
+		item.setItemMeta(meta);
+		spawnPointsItem = item;
+	}
+
+	private static void createPowerupPointsItem() {
+		ItemStack item = new ItemStack(Material.GOLD_BLOCK);
+		ItemMeta meta = item.getItemMeta();
+		meta.setDisplayName("§eEdit Powerup Points");
+		List<String> lore = new ArrayList<>();
+		lore.add("§6Right Click §7to add a new powerup point OR cycle an existing powerup.");
+		lore.add("§6Left Click §7to remove a powerup point.");
+		lore.add("§6Shift-Left Click §7to remove ALL powerup points.");
+		meta.setLore(lore);
+		item.setItemMeta(meta);
+		powerupPointsItem = item;
 	}
 
 	private static void createQuitEdit() {

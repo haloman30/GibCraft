@@ -25,8 +25,8 @@ public class ConfigClass {
 	private File playerFolder;
 	private File arenaFolder;
 
-	public String playerPath = "\\Players";
-	public String arenaPath = "\\Arenas";
+	public String playerPath = "Players";
+	public String arenaPath = "Arenas";
 
 	private Map<String, FileConfiguration> arenaConfigs = new HashMap<>();
 	private Map<String, FileConfiguration> playerConfigs = new HashMap<>();

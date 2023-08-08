@@ -66,13 +66,17 @@ public class EditMode implements Listener {
 		ItemStack item = event.getItem();
 		Player p = event.getPlayer();
 
-		if (item.hasItemMeta() && item.getItemMeta().hasLore()) {
-			if (item.getItemMeta().getLore().get(0).equals("§6Right Click §7to exit edit mode.")) {
+		if (item.hasItemMeta() && item.getItemMeta().hasLore()) 
+		{
+			if (item.getItemMeta().getLore().get(0).equals("§6Right Click §7to exit edit mode.")) 
+			{
 				event.setCancelled(true);
 				toggleEditMode(p,
 						am.getArena(item.getItemMeta().getLore().get(item.getItemMeta().getLore().size() - 1)));
 				p.sendMessage(Commands.prefix() + "§eToggled edit mode.");
-			} else if (item.getItemMeta().getLore().get(0).equals("§6Left Click §7to set corner 1.")) {
+			} 
+			else if (item.getItemMeta().getLore().get(0).equals("§6Left Click §7to set corner 1.")) 
+			{
 				event.setCancelled(true);
 				Arena arena = am.getArena(item.getItemMeta().getLore().get(item.getItemMeta().getLore().size() - 1));
 				if (event.getAction() == Action.LEFT_CLICK_BLOCK) {
@@ -85,7 +89,16 @@ public class EditMode implements Listener {
 					p.sendMessage(Commands.prefix() + "§eSet arena corner 2");
 				}
 			}
-
+			else if (item.getItemMeta().getLore().get(0).equals("§6Right Click §7to add a new spawn point.")) 
+			{
+				// spawns
+				p.sendMessage("spawnpoint");
+			}
+			else if (item.getItemMeta().getLore().get(0).equals("§6Right Click §7to add a new powerup point OR cycle an existing powerup.")) 
+			{
+				// powerups
+				p.sendMessage("powerup");
+			}
 		}
 
 	}
