@@ -440,25 +440,97 @@ public class ArenaManager {
 		if (arena.getPlayerCount() != 0) {
 			List<Integer> scores = Utils.getSortedPointsLeaderboard(arena);
 			List<Player> players = Utils.getSortedPlayerLeaderboard(arena, scores);
+			
 			Player winner = players.get(0);
+			int winner_score = scores.get(0);
+			
+			String tied_winner_names = "";
+			ArrayList<Player> tied_players = new ArrayList<Player>();
+			
+			// Build tied players list/message
+			{
+				tied_players.add(winner);
+				
+				for (int i = 1; i < players.size(); i++)
+				{
+					int score = scores.get(i);
+					
+					if (score == winner_score)
+					{
+						tied_players.add(players.get(i));
+					}
+				}
+				
+				if (tied_players.size() > 1)
+				{
+					for (int i = 0; i < tied_players.size(); i++)
+					{
+						tied_winner_names += tied_players.get(i).getName();
+						
+						if (i != tied_players.size() - 1)
+						{
+							if (tied_players.size() > 2)
+							{
+								tied_winner_names += ", ";
+							}
+							else
+							{
+								tied_winner_names += " ";
+							}
+						}
+						
+						if (i == tied_players.size() - 2)
+						{
+							tied_winner_names += "and ";
+						}
+					}
+				}
+			}
 
 			List<Player> toRemove = new ArrayList<>();
 
-			for (Player p : arena.getAllPlayers()) {
-
-				if (p.getName().equals(winner.getName()))
-					Utils.addWin(p, plugin.playerStats);
-				else if (!arena.getSpectators().contains(p))
-					Utils.addLoss(p, plugin.playerStats);
-
-				p.sendMessage(String.format(Language.ffa_winner_message_format, winner.getName(), arena.getScores().get(winner)));
-				
-
-				for (int j = 2; j <= arena.getPlayerCount(); j++) 
+			for (Player p : arena.getAllPlayers()) 
+			{
+				if (tied_players.size() > 1)
 				{
-					p.sendMessage(String.format(Language.ffa_loser_message_format, j, players.get(j - 1).getName(),
-							arena.getScores().get(players.get(j - 1))));
+					if (tied_players.contains(p))
+					{
+						Utils.addWin(p, plugin.playerStats);
+					}
+					else if (!arena.getSpectators().contains(p))
+					{
+						Utils.addLoss(p, plugin.playerStats);
+					}
+					
+					p.sendMessage(String.format(Language.ffa_tied_message_format, tied_winner_names, winner_score));
+					
+					for (int j = tied_players.size(); j <= arena.getPlayerCount() - 1; j++)
+					{
+						p.sendMessage(String.format(Language.ffa_loser_message_format, j + 1, players.get(j).getName(), 
+							arena.getScores().get(players.get(j))));
+					}
 				}
+				else
+				{
+					if (p.getName().equals(winner.getName()))
+					{
+						Utils.addWin(p, plugin.playerStats);
+					}
+					else if (!arena.getSpectators().contains(p))
+					{
+						Utils.addLoss(p, plugin.playerStats);
+					}
+					
+					p.sendMessage(String.format(Language.ffa_winner_message_format, winner.getName(), winner_score));
+					
+					for (int j = 1; j <= arena.getPlayerCount() - 1; j++)
+					{
+						p.sendMessage(String.format(Language.ffa_loser_message_format, j + 1, players.get(j).getName(), 
+							arena.getScores().get(players.get(j))));
+					}
+				}
+
+				
 
 				p.setScoreboard(Bukkit.getScoreboardManager().getNewScoreboard());
 

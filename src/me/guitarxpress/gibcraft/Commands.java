@@ -116,6 +116,12 @@ public class Commands implements CommandExecutor {
 			return;
 		}
 		
+		if (args.length < 2)
+		{
+			p.sendMessage(String.format(Language.error_missing_args_format, cmd + " join <name>"));
+			return;
+		}
+		
 		if (!am.exists(args[1]))
 		{
 			p.sendMessage(Language.error_arena_not_found);
@@ -200,6 +206,12 @@ public class Commands implements CommandExecutor {
 		if (!p.hasPermission(cmd + ".play")) 
 		{
 			p.sendMessage(Language.error_no_permission);
+			return;
+		}
+		
+		if (args.length < 2)
+		{
+			p.sendMessage(String.format(Language.error_missing_args_format, cmd + " spectate <name>"));
 			return;
 		}
 		
@@ -311,7 +323,7 @@ public class Commands implements CommandExecutor {
 		
 		if (args.length < 2)
 		{
-			// missing args
+			p.sendMessage(String.format(Language.error_missing_args_format, cmd + " delete <name>"));
 			return;
 		}
 		
@@ -363,7 +375,7 @@ public class Commands implements CommandExecutor {
 		
 		if (args.length < 2)
 		{
-			// missing args
+			p.sendMessage(String.format(Language.error_missing_args_format, cmd + " tp <name>"));
 			return;
 		}
 		
@@ -389,7 +401,7 @@ public class Commands implements CommandExecutor {
 		
 		if (args.length < 2)
 		{
-			// missing args
+			p.sendMessage(String.format(Language.error_missing_args_format, cmd + " raysize <size>"));
 			return;
 		}
 		

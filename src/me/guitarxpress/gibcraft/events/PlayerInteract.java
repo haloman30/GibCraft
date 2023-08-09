@@ -165,21 +165,32 @@ public class PlayerInteract implements Listener {
 
 					// Send death message to all in game players
 					if (!plugin.deathMessages1.isEmpty() && !plugin.deathMessages2.isEmpty())
-						for (Player player : arena.getAllPlayers()) {
-							player.sendMessage(ChatColor.translateAlternateColorCodes('&',
-									String.format(
-											plugin.deathMessages1.get(random.nextInt(plugin.deathMessages1.size()))
-													+ " "
-													+ ((random.nextInt(2) == 1)
-															? plugin.deathMessages2
-																	.get(random.nextInt(plugin.deathMessages2.size()))
-															: ""),
-											hit.getName(), p.getName())));
-							if (arena.getMode() == Mode.FFA)
-								am.createScoreboardFFA(p);
-							else
-								am.createScoreboardDuos(p);
+					{
+						String primary_message = plugin.deathMessages1.get(random.nextInt(plugin.deathMessages1.size()));
+						String secondary_message = "";
+						
+						if (random.nextInt(2) == 1)
+						{
+							secondary_message = plugin.deathMessages2.get(random.nextInt(plugin.deathMessages2.size()));
 						}
+						
+						String random_message = ChatColor.translateAlternateColorCodes('&', String.format(primary_message
+							+ " " + secondary_message, hit.getName(), p.getName()));
+						
+						for (Player player : arena.getAllPlayers()) 
+						{
+							player.sendMessage(random_message);
+							
+							if (arena.getMode() == Mode.FFA)
+							{
+								am.createScoreboardFFA(p);
+							}
+							else
+							{
+								am.createScoreboardDuos(p);
+							}
+						}
+					}
 
 					// Change player gamemode to spectator instead of actually killing them
 					hit.setGameMode(GameMode.SPECTATOR);

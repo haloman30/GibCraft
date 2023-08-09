@@ -31,6 +31,7 @@ public abstract class Language
 	public static String duos_winners_message_format = label + "§6%s Team §ewon with §6%s §efrags!";
 	public static String duos_losers_message_format = label + "§e2. §6%s §e- §6%s";
 	public static String ffa_winner_message_format = label + "§6%s §ewon with §6%s §efrags!";
+	public static String ffa_tied_message_format = label + "§6%s §etied with §6%s §efrags!";
 	public static String ffa_loser_message_format = label + "§e%s. §6%s §e- §6%s";
 	
 	public static String displaying_stats = label + "Displaying Stats";

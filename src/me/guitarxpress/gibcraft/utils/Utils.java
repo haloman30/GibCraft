@@ -3,9 +3,11 @@ package me.guitarxpress.gibcraft.utils;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Color;
@@ -107,6 +109,36 @@ public final class Utils {
 				return true;
 		return false;
 	}
+	
+	public static HashMap<Player, Integer> GetSortedPlayersLeaderboard(Arena arena)
+	{
+		HashMap<Player, Integer> scores_map = new HashMap<>();
+		HashMap<Player, Integer> sorted_map = new HashMap<>();
+		List<Integer> scores = new ArrayList<>();
+
+		for (Player player : arena.getPlayers()) 
+		{
+			int score = arena.getScores().get(player);
+			
+			scores_map.put(player, score);
+			scores.add(score);
+		}
+
+		Collections.sort(scores, Collections.reverseOrder());
+
+        for (int score : scores) 
+        {
+            for (Entry<Player, Integer> entry : scores_map.entrySet()) 
+            {
+                if (entry.getValue() == score) 
+                {
+                	sorted_map.put(entry.getKey(), score);
+                }
+            }
+        }
+		
+		return sorted_map;
+	}
 
 	public static List<Integer> getSortedPointsLeaderboard(Arena arena) {
 		List<Integer> scores = new ArrayList<>();
@@ -129,7 +161,7 @@ public final class Utils {
 
 		for (Integer score : scores)
 			for (Player player : arena.getPlayers())
-				if (arena.getScores().get(player) == score)
+				if (arena.getScores().get(player) == score && !sortedPlayers.contains(player))
 					sortedPlayers.add(player);
 
 		return sortedPlayers;
