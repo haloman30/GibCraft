@@ -24,6 +24,7 @@ import org.bukkit.scoreboard.Team;
 import me.guitarxpress.gibcraft.Arena;
 import me.guitarxpress.gibcraft.Commands;
 import me.guitarxpress.gibcraft.GibCraft;
+import me.guitarxpress.gibcraft.Language;
 import me.guitarxpress.gibcraft.Stats;
 import me.guitarxpress.gibcraft.enums.Mode;
 import me.guitarxpress.gibcraft.enums.Status;
@@ -112,8 +113,9 @@ public class ArenaManager {
 		playerInArena.put(player, arena);
 
 		for (Player p : arena.getAllPlayers())
-			p.sendMessage(Commands.prefix() + "§6" + player.getName() + "§e joined the game. (§b"
-					+ arena.getPlayerCount() + "§e/" + "§b" + arena.getMode().maxPlayers() + "§e)");
+		{
+			p.sendMessage(String.format(Language.player_joined_format, player.getName(), arena.getPlayerCount(), arena.getMode().maxPlayers()));
+		}
 
 		if (arena.getPlayerCount() >= arena.getMode().minPlayers())
 			if (arena.getStatus() != Status.STARTING)
@@ -139,8 +141,9 @@ public class ArenaManager {
 		playerInArena.put(player, arena);
 
 		for (Player p : arena.getAllPlayers())
-			p.sendMessage(Commands.prefix() + "§6" + player.getName() + "§e joined the game. (§b"
-					+ arena.getPlayerCount() + "§e/" + "§b" + arena.getMode().maxPlayers() + "§e)");
+		{
+			p.sendMessage(String.format(Language.player_joined_format, player.getName(), arena.getPlayerCount(), arena.getMode().maxPlayers()));
+		}
 
 		if (arena.getPlayerCount() >= arena.getMode().minPlayers())
 			if (arena.getStatus() != Status.STARTING)
@@ -171,7 +174,7 @@ public class ArenaManager {
 
 		if (arena.getStatus() != Status.ENDED) {
 			for (Player p : arena.getAllPlayers()) {
-				p.sendMessage(Commands.prefix() + "§6" + player.getName() + " §eleft the game.");
+				p.sendMessage(String.format(Language.player_left_format, player.getName()));
 			}
 		}
 
@@ -204,7 +207,7 @@ public class ArenaManager {
 			createScoreboardDuos(player);
 
 		for (Player p : arena.getAllPlayers())
-			p.sendMessage(Commands.prefix() + player.getName() + " §eis spectating.");
+			p.sendMessage(String.format(Language.player_spectating_format, player.getName()));
 
 		oldMode.put(player, player.getGameMode());
 		player.setGameMode(GameMode.SPECTATOR);
@@ -219,7 +222,7 @@ public class ArenaManager {
 		player.setScoreboard(Bukkit.getScoreboardManager().getNewScoreboard());
 
 		for (Player p : arena.getAllPlayers())
-			p.sendMessage(Commands.prefix() + player.getName() + " §eis no longer spectating.");
+			p.sendMessage(String.format(Language.player_stopped_spectating_format, player.getName()));
 
 		toLobby(player);
 		
@@ -352,8 +355,7 @@ public class ArenaManager {
 		arena.setStatus(Status.STARTING);
 
 		if (arena.getPlayerCount() < arena.getMode().maxPlayers())
-			Bukkit.broadcastMessage(Commands.prefix() + "§eArena §6" + arena.getName() + " §eis starting in §6"
-					+ timeToStart + "§e seconds. Join now!");
+			Bukkit.broadcastMessage(String.format(Language.arena_starting_warning_format, arena.getName(), timeToStart));
 
 		arenaCountdownTimer.put(arena, timeToStart);
 		new RepeatingTask(plugin, 0, 1 * 20) {
@@ -363,7 +365,7 @@ public class ArenaManager {
 				int time = arenaCountdownTimer.get(arena);
 				if ((time % 5 == 0 && time >= 5) || (time > 0 && time < 5)) {
 					for (Player player : arena.getPlayers()) {
-						player.sendMessage(Commands.prefix() + "§eStarting in §6" + time + "§e.");
+						player.sendMessage(String.format(Language.arena_starting_in_format, time));
 						player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_HAT, 1f, 1f);
 					}
 				} else if (time <= 0 && arena.getPlayerCount() >= arena.getMode().minPlayers()) {
@@ -401,10 +403,8 @@ public class ArenaManager {
 				else if (!arena.getSpectators().contains(p))
 					Utils.addLoss(p, plugin.playerStats);
 
-				p.sendMessage(Commands.prefix() + "§6" + winners + " Team §ewon with §6" + arena.getTeamScore(winners)
-						+ " §efrags!");
-
-				p.sendMessage(Commands.prefix() + "§e2. §6" + losers + " §e- " + "§6" + arena.getTeamScore(losers));
+				p.sendMessage(String.format(Language.duos_winners_message_format, winners, arena.getTeamScore(winners)));
+				p.sendMessage(String.format(Language.duos_losers_message_format, losers, arena.getTeamScore(losers)));
 
 				p.setScoreboard(Bukkit.getScoreboardManager().getNewScoreboard());
 
@@ -451,12 +451,13 @@ public class ArenaManager {
 				else if (!arena.getSpectators().contains(p))
 					Utils.addLoss(p, plugin.playerStats);
 
-				p.sendMessage(Commands.prefix() + "§6" + winner.getName() + " §ewon with §6"
-						+ arena.getScores().get(winner) + " §efrags!");
+				p.sendMessage(String.format(Language.ffa_winner_message_format, winner.getName(), arena.getScores().get(winner)));
+				
 
-				for (int j = 2; j <= arena.getPlayerCount(); j++) {
-					p.sendMessage(Commands.prefix() + "§e" + j + ". §6" + players.get(j - 1).getName() + " §e- " + "§6"
-							+ arena.getScores().get(players.get(j - 1)));
+				for (int j = 2; j <= arena.getPlayerCount(); j++) 
+				{
+					p.sendMessage(String.format(Language.ffa_loser_message_format, j, players.get(j - 1).getName(),
+							arena.getScores().get(players.get(j - 1))));
 				}
 
 				p.setScoreboard(Bukkit.getScoreboardManager().getNewScoreboard());
@@ -529,11 +530,11 @@ public class ArenaManager {
 
 	public void createStatsBoard(Player p) {
 		if (!plugin.playerStats.containsKey(p.getName())) {
-			p.sendMessage(Commands.prefix() + "§cYou haven't played a game yet.");
+			p.sendMessage(Language.error_stats_no_games);
 			return;
 		}
 
-		p.sendMessage(Commands.prefix() + "§eDisplaying Stats");
+		p.sendMessage(Language.displaying_stats);
 
 		DecimalFormat df = new DecimalFormat(" #,##0.00");
 

@@ -13,6 +13,7 @@ import org.bukkit.inventory.ItemStack;
 
 import me.guitarxpress.gibcraft.Commands;
 import me.guitarxpress.gibcraft.GibCraft;
+import me.guitarxpress.gibcraft.Language;
 import me.guitarxpress.gibcraft.utils.Utils;
 
 public class GUIManager implements Listener {
@@ -73,12 +74,12 @@ public class GUIManager implements Listener {
 			if (plugin.getArenaManager().getArena(arenaName).getTeamPlayerCount("Red") < 2)
 				plugin.getArenaManager().addPlayerToArena(p, plugin.getArenaManager().getArena(arenaName), "Red");
 			else
-				p.sendMessage(Commands.prefix() + "§cThat team is full.");
+				p.sendMessage(Language.error_team_full);
 		} else if (item.equals(ItemManager.blueTeam)) {
 			if (plugin.getArenaManager().getArena(arenaName).getTeamPlayerCount("Blue") < 2)
 				plugin.getArenaManager().addPlayerToArena(p, plugin.getArenaManager().getArena(arenaName), "Blue");
 			else
-				p.sendMessage(Commands.prefix() + "§cThat team is full.");
+				p.sendMessage(Language.error_team_full);
 		}
 		p.closeInventory();
 	}

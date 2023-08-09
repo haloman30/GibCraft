@@ -18,6 +18,7 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import me.guitarxpress.gibcraft.Arena;
 import me.guitarxpress.gibcraft.Commands;
 import me.guitarxpress.gibcraft.GibCraft;
+import me.guitarxpress.gibcraft.Language;
 import me.guitarxpress.gibcraft.enums.Status;
 import me.guitarxpress.gibcraft.managers.ArenaManager;
 import me.guitarxpress.gibcraft.utils.Utils;
@@ -113,11 +114,11 @@ public class SignEvents implements Listener {
 					Bukkit.dispatchCommand(event.getPlayer(), "gib join " + s);
 				} else if (arena.getStatus() == Status.ONGOING) {
 					am.addSpectatorToArena(event.getPlayer(), arena);
-					event.getPlayer().sendMessage(Commands.prefix() + "§eTo leave use §6/gib spectate " + s + "§e.");
+					event.getPlayer().sendMessage(String.format(Language.spectate_leave_information, s));
 				} else if (arena.getStatus() == Status.SETTING_UP) {
-					event.getPlayer().sendMessage(Commands.prefix() + "§cThis arena is being setup.");
+					event.getPlayer().sendMessage(Language.error_arena_being_setup);
 				} else if (arena.getStatus() == Status.ENDED || arena.getStatus() == Status.CANCELLED) {
-					event.getPlayer().sendMessage(Commands.prefix() + "§cThis arena is restarting.");
+					event.getPlayer().sendMessage(Language.error_arena_restarting);
 				}
 				updateSign(sign, am, s);
 			}

@@ -7,6 +7,7 @@ import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 
 import me.guitarxpress.gibcraft.Commands;
 import me.guitarxpress.gibcraft.GibCraft;
+import me.guitarxpress.gibcraft.Language;
 import me.guitarxpress.gibcraft.managers.ArenaManager;
 
 public class CommandPreprocess implements Listener {
@@ -46,7 +47,7 @@ public class CommandPreprocess implements Listener {
 		
 		if (!command_permitted)
 		{
-			p.sendMessage(Commands.prefix() + "§cYou can't do that inside the arena.");
+			p.sendMessage(Language.error_command_blocked);
 			event.setCancelled(true);
 		}
 	}

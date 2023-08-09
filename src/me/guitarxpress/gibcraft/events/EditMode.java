@@ -16,6 +16,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import me.guitarxpress.gibcraft.Arena;
 import me.guitarxpress.gibcraft.Commands;
 import me.guitarxpress.gibcraft.GibCraft;
+import me.guitarxpress.gibcraft.Language;
 import me.guitarxpress.gibcraft.enums.Status;
 import me.guitarxpress.gibcraft.managers.ArenaManager;
 import me.guitarxpress.gibcraft.managers.ItemManager;
@@ -73,7 +74,7 @@ public class EditMode implements Listener {
 				event.setCancelled(true);
 				toggleEditMode(p,
 						am.getArena(item.getItemMeta().getLore().get(item.getItemMeta().getLore().size() - 1)));
-				p.sendMessage(Commands.prefix() + "§eToggled edit mode.");
+				p.sendMessage(Language.edit_mode_toggled);
 			} 
 			else if (item.getItemMeta().getLore().get(0).equals("§6Left Click §7to set corner 1.")) 
 			{
@@ -82,11 +83,11 @@ public class EditMode implements Listener {
 				if (event.getAction() == Action.LEFT_CLICK_BLOCK) {
 					Location[] bounds = { event.getClickedBlock().getLocation(), arena.getBoundaries()[1] };
 					arena.setBoundaries(bounds);
-					p.sendMessage(Commands.prefix() + "§eSet arena corner 1");
+					p.sendMessage(Language.edit_mode_set_corner_1);
 				} else if (event.getAction() == Action.RIGHT_CLICK_BLOCK) {
 					Location[] bounds = { arena.getBoundaries()[0], event.getClickedBlock().getLocation() };
 					arena.setBoundaries(bounds);
-					p.sendMessage(Commands.prefix() + "§eSet arena corner 2");
+					p.sendMessage(Language.edit_mode_set_corner_2);
 				}
 			}
 			else if (item.getItemMeta().getLore().get(0).equals("§6Right Click §7to add a new spawn point.")) 

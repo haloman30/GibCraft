@@ -18,6 +18,7 @@ import org.bukkit.util.Vector;
 import me.guitarxpress.gibcraft.Arena;
 import me.guitarxpress.gibcraft.Commands;
 import me.guitarxpress.gibcraft.GibCraft;
+import me.guitarxpress.gibcraft.Language;
 import me.guitarxpress.gibcraft.PowerUp;
 import me.guitarxpress.gibcraft.enums.Mode;
 import me.guitarxpress.gibcraft.enums.Status;
@@ -119,7 +120,7 @@ public class PlayerMove implements Listener {
 				PowerUp pu = plugin.powerups.get(r);
 				toRemove = as;
 				pu.applyEffect(p);
-				p.sendMessage(Commands.prefix() + "§ePicked up PowerUp: §6" + pu.getName());
+				p.sendMessage(String.format(Language.powerup_pickup_format, pu.getName()));
 //				p.playSound(as.getLocation(), Sound.BLOCK_NOTE_BLOCK_BELL, 1f, 1f);
 				p.playSound(as.getLocation(), Sound.BLOCK_BEACON_POWER_SELECT, 1f, 1f);
 			}
