@@ -8,7 +8,7 @@ In this gamemode, all players are given Laserguns which can instantly kill other
 Currently, two modes are available: Free-For-All and Duos, with Duos being a team of two players. The first player or team to reach 20
 kills wins.
 
-** This plugin requires [ProtocolLib](https://www.spigotmc.org/resources/protocollib.1997/) **
+**This plugin requires [ProtocolLib](https://www.spigotmc.org/resources/protocollib.1997/).**
 
 ## Commands
 
