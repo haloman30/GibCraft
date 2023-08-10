@@ -41,11 +41,17 @@ public class PowerUp {
 		this.effect = effect;
 	}
 
-	public void applyEffect(Player p) {
+	public void applyEffect(Player p) 
+	{
+		if (p.hasPotionEffect(effect.getType()))
+		{
+			p.removePotionEffect(effect.getType());
+		}
+		
 		p.addPotionEffect(effect);
 		GibCraft.playerPowerup.put(p, this);
 		p.setLevel((int) ((double) effect.getDuration() / (double) 20));
-		Bukkit.getScheduler().scheduleSyncDelayedTask(Bukkit.getPluginManager().getPlugin("GibCraft"), () -> {
+		Bukkit.getScheduler().scheduleSyncDelayedTask(GibCraft.instance, () -> {
 			clearEffect(p);
 		}, effect.getDuration());
 	}

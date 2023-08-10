@@ -376,23 +376,19 @@ public class GibCraft extends JavaPlugin {
 
 				if (am.arenas != null)
 					for (Arena arena : am.arenas) {
-						if (arena.getStatus() == Status.ONGOING) {
-							if (puTimer > 25) {
-								if (!arena.getPowerups().isEmpty())
-									arena.removePowerup(0);
-								ArmorStand as = (ArmorStand) arena.getBoundaries()[0].getWorld()
-										.spawnEntity(arena.selectRandomSpawn(), EntityType.ARMOR_STAND);
-								as.setInvisible(true);
-								as.setInvulnerable(true);
-								as.setCustomName("§ePOWERUP");
-								as.setCustomNameVisible(true);
-								as.setCollidable(false);
-								as.getEquipment().setItem(EquipmentSlot.HEAD, new ItemStack(Material.GOLD_BLOCK));
-								arena.addPowerup(as);
+						if (arena.getStatus() == Status.ONGOING) 
+						{
+							if (puTimer > 25) 
+							{
+								arena.AddNewRandomPowerup();
 								puTimer = 0;
-							} else {
+							} 
+							else 
+							{
 								puTimer++;
 							}
+							
+							arena.UpdatePowerups();
 
 							int timer = am.arenaTimer.get(arena);
 							if (timer > 0)
@@ -463,7 +459,8 @@ public class GibCraft extends JavaPlugin {
 
 						}
 
-						for (ArmorStand as : arena.getPowerups()) {
+						for (ArmorStand as : arena.powerups.keySet()) 
+						{
 							as.setHeadPose(new EulerAngle(0, Math.toRadians(asRotation), 0));
 							as.getWorld().spawnParticle(Particle.REDSTONE,
 									as.getLocation().add(new Location(as.getWorld(), 0, 1.8, 0)).clone(), 2, .5, .5, .5,

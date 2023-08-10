@@ -1,9 +1,12 @@
 package me.guitarxpress.gibcraft;
 
+import org.bukkit.FluidCollisionMode;
+import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.util.RayTraceResult;
 
 import me.guitarxpress.gibcraft.enums.Mode;
 import me.guitarxpress.gibcraft.enums.Status;
@@ -45,7 +48,7 @@ public class Commands implements CommandExecutor {
 			ShowHelpEntry(p, "leave", "Leaves the current arena.");
 			ShowHelpEntry(p, "spectate <arena>", "Spectate the specified arena/game.");
 			ShowHelpEntry(p, "stats", "Displays player statistics.");
-			ShowHelpEntry(p, "arenas", "Displays all available arenas.");
+			ShowHelpEntry(p, "list", "Displays all available arenas.");
 		}
 		
 		if (p.hasPermission(cmd + ".create")) 
@@ -72,6 +75,7 @@ public class Commands implements CommandExecutor {
 		if (p.hasPermission(cmd + ".admin")) 
 		{
 			ShowHelpEntry(p, "raysize <size>", "Changes the ray size used for lasergun hit detection.");
+			ShowHelpEntry(p, "powerup", "Spawns a new random powerup.");
 		}
 	}
 	
@@ -417,6 +421,35 @@ public class Commands implements CommandExecutor {
 		}
 	}
 	
+	private void PowerupSubcommand(Player p, String[] args)
+	{
+		if (!p.hasPermission(cmd + ".admin")) 
+		{
+			p.sendMessage(Language.error_no_permission);
+			return;
+		}
+		
+		if (!am.isPlayerInArena(p))
+		{
+			p.sendMessage(Language.error_not_in_game);
+			return;
+		}
+		
+		Arena arena = am.getPlayerArena(p);
+		RayTraceResult result = p.rayTraceBlocks(10, FluidCollisionMode.NEVER);
+		
+		if (result == null)
+		{
+			p.sendMessage(Language.error_powerup_spawn_raycast_fail);
+			return;
+		}
+		
+		Location location = result.getHitBlock().getLocation().add(0, 2, 0);
+		arena.AddPowerup(location);
+		
+		p.sendMessage();
+	}
+	
 	private void SetStatusSubcommand(Player p, String[] args)
 	{
 		if (!p.hasPermission(cmd + ".status")) 
@@ -494,6 +527,9 @@ public class Commands implements CommandExecutor {
 				break;
 			case "setstatus":
 				SetStatusSubcommand(p, args);
+				break;
+			case "powerup":
+				PowerupSubcommand(p, args);
 				break;
 			default:
 				p.sendMessage(Language.error_unknown_command);

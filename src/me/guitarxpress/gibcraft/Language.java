@@ -41,6 +41,10 @@ public abstract class Language
 	public static String edit_mode_set_corner_1 = label + "Set arena corner 1";
 	public static String edit_mode_set_corner_2 = label + "Set arena corner 2";
 	
+	public static String powerup_spawned = label + "Powerup spawned.";
+	
+	public static String powerup_title_format = "§ePOWERUP [§6%s§e]";
+	
 	// - Error Strings -
 	
 	public static String error_unknown_command = error_prefix + "Invalid Command.";
@@ -69,4 +73,5 @@ public abstract class Language
 	public static String error_command_blocked = error_prefix + "You can't do that inside the arena.";
 
 	public static String error_spectate_already_in_game = error_prefix + "You cannot spectate while already in a game.";
+	public static String error_powerup_spawn_raycast_fail = error_prefix + "Could not find a valid location to summon powerup.";
 }

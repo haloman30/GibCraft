@@ -5,12 +5,17 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.EquipmentSlot;
+import org.bukkit.inventory.ItemStack;
 
 import me.guitarxpress.gibcraft.enums.Mode;
 import me.guitarxpress.gibcraft.enums.PowerUpPointType;
@@ -36,7 +41,7 @@ public class Arena
 
 	private List<Player> allPlayers;
 
-	private List<ArmorStand> powerups;
+	public HashMap<ArmorStand, Integer> powerups = new HashMap<ArmorStand, Integer>();
 
 	private Map<String, List<Player>> teams;
 	private Map<String, Integer> teamScore;
@@ -53,7 +58,7 @@ public class Arena
 		this.boundaries = new Location[2];
 		this.scores = new HashMap<>();
 		this.allPlayers = new ArrayList<>();
-		this.powerups = new ArrayList<>();
+		this.powerups = new HashMap<ArmorStand, Integer>();
 		this.teams = new HashMap<>();
 		this.teamScore = new HashMap<>();
 	}
@@ -178,17 +183,32 @@ public class Arena
 	public int getPlayerCount() {
 		return players.size();
 	}
-
-	public List<ArmorStand> getPowerups() {
-		return powerups;
+	
+	public void AddPowerup(Location location)
+	{
+		int lifetime = 25;
+		
+		ArmorStand as = (ArmorStand)boundaries[0].getWorld().spawnEntity(location, EntityType.ARMOR_STAND);
+		{
+			as.setInvisible(true);
+			as.setInvulnerable(true);
+			as.setCustomName(String.format(Language.powerup_title_format, lifetime));
+			as.setCustomNameVisible(true);
+			as.setCollidable(false);
+			as.getEquipment().setItem(EquipmentSlot.HEAD, new ItemStack(Material.GOLD_BLOCK));
+		}
+		
+		addPowerup(as, lifetime);
+	}
+	
+	public void AddNewRandomPowerup()
+	{
+		AddPowerup(selectRandomSpawn());
 	}
 
-	public void setPowerups(List<ArmorStand> powerups) {
-		this.powerups = powerups;
-	}
-
-	public void addPowerup(ArmorStand as) {
-		this.powerups.add(as);
+	public void addPowerup(ArmorStand as, int lifetime) 
+	{
+		this.powerups.put(as, lifetime);
 	}
 
 	public void removePowerup(ArmorStand as) {
@@ -196,15 +216,40 @@ public class Arena
 		as.remove();
 	}
 
-	public void removePowerup(int i) {
-		this.powerups.get(i).remove();
-		this.powerups.remove(i);
+	public void UpdatePowerups() 
+	{
+		ArrayList<ArmorStand> items_to_remove = new ArrayList<ArmorStand>();
+		
+		for (ArmorStand powerup : powerups.keySet())
+		{
+			int powerup_time = powerups.get(powerup);
+			
+			if (powerup_time <= 0)
+			{
+				items_to_remove.add(powerup);
+			}
+			else
+			{
+				int new_lifetime = powerup_time - 1;
+				
+				powerup.setCustomName(String.format(Language.powerup_title_format, new_lifetime));
+				powerups.put(powerup, new_lifetime);
+			}
+		}
+		
+		for (ArmorStand powerup : items_to_remove)
+		{
+			removePowerup(powerup);
+		}
 	}
 
-	public void removeAllPowerups() {
-		for (int i = powerups.size() - 1; i >= 0; i--) {
-			powerups.get(i).remove();
-			powerups.remove(i);
+	public void removeAllPowerups() 
+	{
+		Set<ArmorStand> items_to_remove = powerups.keySet();
+		
+		for (ArmorStand powerup : items_to_remove)
+		{
+			removePowerup(powerup);
 		}
 	}
 

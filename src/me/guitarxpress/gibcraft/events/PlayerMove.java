@@ -2,6 +2,7 @@ package me.guitarxpress.gibcraft.events;
 
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
 
 import org.bukkit.Color;
 import org.bukkit.GameMode;
@@ -112,7 +113,7 @@ public class PlayerMove implements Listener {
 		if (p.getGameMode() != GameMode.ADVENTURE)
 			return;
 
-		List<ArmorStand> powerups = arena.getPowerups();
+		Set<ArmorStand> powerups = arena.powerups.keySet();
 		ArmorStand toRemove = null;
 		for (ArmorStand as : powerups) {
 			if (p.getLocation().distance(as.getLocation()) <= 1.5) {

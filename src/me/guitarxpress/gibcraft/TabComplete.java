@@ -50,8 +50,10 @@ public class TabComplete implements TabCompleter {
 					if (player.hasPermission(cmd + ".status")) {
 						list.add("setstatus");
 					}
-//					if (player.hasPermission(cmd + ".admin")) {
-//					}
+					if (player.hasPermission(cmd + ".admin")) {
+						list.add("raysize");
+						list.add("powerup");
+					}
 					if (player.hasPermission(cmd + ".create")) {
 						list.add("create");
 						list.add("setlobby");
