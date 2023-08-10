@@ -55,8 +55,11 @@ public class PowerUp {
 		GibCraft.playerPowerup.remove(p);
 		p.setLevel(0);
 		
-		p.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 10000 * 20, 0, true, false));
-		p.addPotionEffect(new PotionEffect(PotionEffectType.JUMP, 10000 * 20, 0, true, false));
+		if (GibCraft.instance.getArenaManager().isPlayerInArena(p))
+		{
+			p.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 10000 * 20, 0, true, false));
+			p.addPotionEffect(new PotionEffect(PotionEffectType.JUMP, 10000 * 20, 0, true, false));
+		}
 	}
 
 }

@@ -25,6 +25,7 @@ import me.guitarxpress.gibcraft.Arena;
 import me.guitarxpress.gibcraft.Commands;
 import me.guitarxpress.gibcraft.GibCraft;
 import me.guitarxpress.gibcraft.Language;
+import me.guitarxpress.gibcraft.Logger;
 import me.guitarxpress.gibcraft.Stats;
 import me.guitarxpress.gibcraft.enums.Mode;
 import me.guitarxpress.gibcraft.enums.Status;
@@ -300,7 +301,8 @@ public class ArenaManager {
 		return false;
 	}
 
-	public void start(Arena arena) {
+	public void start(Arena arena) 
+	{
 		int i = 0;
 		for (Player p : arena.getPlayers()) {
 			oldInventory.put(p, p.getInventory().getContents());
@@ -434,10 +436,12 @@ public class ArenaManager {
 //		}, 2 * 20);
 	}
 
-	public void end(Arena arena) {
+	public void end(Arena arena) 
+	{
 		arena.setStatus(Status.ENDED);
 
-		if (arena.getPlayerCount() != 0) {
+		if (arena.getPlayerCount() != 0) 
+		{
 			List<Integer> scores = Utils.getSortedPointsLeaderboard(arena);
 			List<Player> players = Utils.getSortedPlayerLeaderboard(arena, scores);
 			
@@ -530,18 +534,22 @@ public class ArenaManager {
 					}
 				}
 
-				
-
 				p.setScoreboard(Bukkit.getScoreboardManager().getNewScoreboard());
 
 				toRemove.add(p);
 			}
 
-			for (Player player : toRemove) {
+			for (Player player : toRemove) 
+			{
 				if (isSpectating(player))
+				{
 					removeSpectatorFromArena(player, arena);
+				}
 				else
+				{
 					removePlayerFromArena(player, arena);
+				}
+				
 				player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1f, 2f);
 				createStatsBoard(player);
 			}

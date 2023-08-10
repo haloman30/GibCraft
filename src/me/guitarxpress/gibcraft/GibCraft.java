@@ -57,6 +57,8 @@ import me.guitarxpress.gibcraft.utils.Utils;
 
 public class GibCraft extends JavaPlugin {
 
+	public static GibCraft instance = null;
+	
 	private ArenaManager am;
 	private GameManager gm;
 	private ConfigClass cfg;
@@ -103,7 +105,10 @@ public class GibCraft extends JavaPlugin {
 	}
 
 	@Override
-	public void onEnable() {
+	public void onEnable() 
+	{
+		instance = this;
+		
 		getConfig().options().copyDefaults(true);
 		getConfig().options().copyHeader(true);
 		saveDefaultConfig();
