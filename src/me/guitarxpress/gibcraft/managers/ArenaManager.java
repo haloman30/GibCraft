@@ -44,8 +44,9 @@ public class ArenaManager {
 	private Map<Player, Arena> playerInArena;
 	private Map<Arena, Integer> arenaCountdownTimer = new HashMap<>();
 	public Map<Arena, Integer> arenaTimer = new HashMap<>();
-	public int gameTime; // Time in seconds
-	public int maxFrags;
+	private int gameTime; // Time in seconds
+	private int maxFrags;
+	private int maxPlayers;
 	public int timeToStart;
 	private GameManager gm;
 	private SQLGetter data;
@@ -115,7 +116,7 @@ public class ArenaManager {
 
 		for (Player p : arena.getAllPlayers())
 		{
-			p.sendMessage(String.format(Language.player_joined_format, player.getName(), arena.getPlayerCount(), arena.getMode().maxPlayers()));
+			p.sendMessage(String.format(Language.player_joined_format, player.getName(), arena.getPlayerCount(), arena.getMode().maxPlayers(arena)));
 		}
 
 		if (arena.getPlayerCount() >= arena.getMode().minPlayers())
@@ -143,7 +144,7 @@ public class ArenaManager {
 
 		for (Player p : arena.getAllPlayers())
 		{
-			p.sendMessage(String.format(Language.player_joined_format, player.getName(), arena.getPlayerCount(), arena.getMode().maxPlayers()));
+			p.sendMessage(String.format(Language.player_joined_format, player.getName(), arena.getPlayerCount(), arena.getMode().maxPlayers(arena)));
 		}
 
 		if (arena.getPlayerCount() >= arena.getMode().minPlayers())
@@ -356,7 +357,7 @@ public class ArenaManager {
 	public void startTimer(Arena arena) {
 		arena.setStatus(Status.STARTING);
 
-		if (arena.getPlayerCount() < arena.getMode().maxPlayers())
+		if (arena.getPlayerCount() < arena.getMode().maxPlayers(arena))
 			Bukkit.broadcastMessage(String.format(Language.arena_starting_warning_format, arena.getName(), timeToStart));
 
 		arenaCountdownTimer.put(arena, timeToStart);
@@ -654,5 +655,50 @@ public class ArenaManager {
 		Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, () -> {
 			p.setScoreboard(manager.getNewScoreboard());
 		}, 10 * 20);
+	}
+	
+	public int GetGameTime(Arena arena)
+	{
+		if (arena != null && arena.game_time_override)
+		{
+			return arena.game_time;
+		}
+
+		return gameTime;
+	}
+	
+	public int GetMaxFrags(Arena arena)
+	{
+		if (arena != null && arena.max_frags_override)
+		{
+			return arena.max_frags;
+		}
+
+		return maxFrags;
+	}
+	
+	public int GetMaxPlayers(Arena arena)
+	{
+		if (arena != null && arena.max_players_override)
+		{
+			return arena.max_players;
+		}
+
+		return maxPlayers;
+	}
+	
+	public void SetDefaultGameTime(int game_time)
+	{
+		gameTime = game_time;
+	}
+	
+	public void SetDefaultFragsLimit(int frag_limit)
+	{
+		maxFrags = frag_limit;
+	}
+	
+	public void SetDefaultMaxPlayers(int max_players)
+	{
+		maxPlayers = max_players;
 	}
 }

@@ -10,6 +10,9 @@ timeToStart: 20
 # Respawn time after getting fragged
 respawnTime: 3
 
+# The maximum number of players for an arena
+maxPlayers: 4
+
 # Messages that show when a player is fragged. The message selected is random and can be from either the first list only, or both.
 # Make sure to add a space at the end of the first message.
 # Feel free to use colours with &<colour id>.

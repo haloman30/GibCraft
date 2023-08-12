@@ -65,6 +65,8 @@ public class Commands implements CommandExecutor {
 		if (p.hasPermission(cmd + ".edit")) 
 		{
 			ShowHelpEntry(p, "edit <arena>", "Toggle edit mode for specified arena.");
+			ShowHelpEntry(p, "tp <arena>", "Teleports to an arena.");
+			ShowHelpEntry(p, "settings <arena>", "Adjust specific settings for an arena.");
 		}
 		
 		if (p.hasPermission(cmd + ".status")) 
@@ -470,6 +472,122 @@ public class Commands implements CommandExecutor {
 		am.setStatus(arena, new_status);
 		p.sendMessage(String.format(Language.arena_status_changed_format, args[1], new_status));
 	}
+	
+	private void SettingsSubcommand(Player p, String[] args)
+	{
+		if (!p.hasPermission(cmd + ".edit")) 
+		{
+			p.sendMessage(Language.error_no_permission);
+			return;
+		}
+		
+		if (args.length < 4)
+		{
+			p.sendMessage(String.format(Language.error_missing_args_format, "gib settings <arena> <option> <value|reset>"));
+			return;
+		}
+		
+		if (!am.exists(args[1])) 
+		{
+			p.sendMessage(Language.error_arena_not_found);
+			return;
+		}
+		
+		Arena arena = am.getArena(args[1]);
+		String setting_name = args[2].toLowerCase();
+		String setting_value = args[3].toLowerCase();
+		
+		switch (setting_name)
+		{
+		case "maxplayers":
+			if (setting_value.equalsIgnoreCase("reset"))
+			{
+				arena.max_players_override = false;
+				p.sendMessage(String.format(Language.setting_reverted_to_default, "maxplayers", am.GetMaxPlayers(null)));
+			}
+			else
+			{
+				try
+				{
+					arena.max_players = Integer.parseInt(setting_value);
+					arena.max_players_override = true;
+					p.sendMessage(String.format(Language.setting_updated, "maxplayers", setting_value));
+				}
+				catch (Exception ex)
+				{
+					p.sendMessage(String.format(Language.error_setting_parse_fail_int, setting_value));
+				}
+			}
+			
+			break;
+		case "gametime":
+			if (setting_value.equalsIgnoreCase("reset"))
+			{
+				arena.game_time_override = false;
+				p.sendMessage(String.format(Language.setting_reverted_to_default, "gametime", am.GetGameTime(null)));
+			}
+			else
+			{
+				try
+				{
+					arena.game_time = Integer.parseInt(setting_value);
+					arena.game_time_override = true;
+					p.sendMessage(String.format(Language.setting_updated, "gametime", setting_value));
+				}
+				catch (Exception ex)
+				{
+					p.sendMessage(String.format(Language.error_setting_parse_fail_int, setting_value));
+				}
+			}
+			
+			break;
+		case "maxfrags":
+			if (setting_value.equalsIgnoreCase("reset"))
+			{
+				arena.max_frags_override = false;
+				p.sendMessage(String.format(Language.setting_reverted_to_default, "maxfrags", am.GetMaxFrags(null)));
+			}
+			else
+			{
+				try
+				{
+					arena.max_frags = Integer.parseInt(setting_value);
+					arena.max_frags_override = true;
+					p.sendMessage(String.format(Language.setting_updated, "maxfrags", setting_value));
+				}
+				catch (Exception ex)
+				{
+					p.sendMessage(String.format(Language.error_setting_parse_fail_int, setting_value));
+				}
+			}
+			
+			break;
+		case "respawntime":
+			if (setting_value.equalsIgnoreCase("reset"))
+			{
+				arena.respawn_time_override = false;
+				p.sendMessage(String.format(Language.setting_reverted_to_default, "respawntime", GibCraft.instance.getGameManager().GetRespawnTime(null)));
+			}
+			else
+			{
+				try
+				{
+					arena.respawn_time = Integer.parseInt(setting_value);
+					arena.respawn_time_override = true;
+					p.sendMessage(String.format(Language.setting_updated, "respawntime", setting_value));
+				}
+				catch (Exception ex)
+				{
+					p.sendMessage(String.format(Language.error_setting_parse_fail_int, setting_value));
+				}
+			}
+			
+			break;
+		default:
+			p.sendMessage(Language.error_invalid_setting_name + "maxplayers, gametime, maxfrags, respawntime");
+			break;
+		}
+	}
 
 	@Override
 	public boolean onCommand(CommandSender sender, Command command, String label, String[] args) 
@@ -530,6 +648,9 @@ public class Commands implements CommandExecutor {
 				break;
 			case "powerup":
 				PowerupSubcommand(p, args);
+				break;
+			case "settings":
+				SettingsSubcommand(p, args);
 				break;
 			default:
 				p.sendMessage(Language.error_unknown_command);

@@ -1,10 +1,19 @@
 package me.guitarxpress.gibcraft.enums;
 
+import me.guitarxpress.gibcraft.Arena;
+
 public enum Mode {
 	FFA, DUOS;
 
-	public int maxPlayers() {
-		switch (this) {
+	public int maxPlayers(Arena arena) 
+	{
+		if (arena != null && arena.max_players_override)
+		{
+			return arena.max_players;
+		}
+		
+		switch (this) 
+		{
 		case DUOS:
 			return 4;
 		case FFA:
@@ -25,7 +34,13 @@ public enum Mode {
 		}
 	}
 
-	public int maxPerTeam() {
+	public int maxPerTeam(Arena arena) 
+	{
+		if (arena != null && arena.max_players_override)
+		{
+			return arena.max_players / 2;
+		}
+		
 		switch (this) {
 		case DUOS:
 			return 2;

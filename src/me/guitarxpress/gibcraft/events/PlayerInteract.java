@@ -154,11 +154,13 @@ public class PlayerInteract implements Listener {
 					p.playSound(p.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1f, 1f);
 
 					// Check if it was last kill needed to end game
+					int max_frags = am.GetMaxFrags(arena);
+					
 					if (arena.getMode() == Mode.FFA) {
-						if (arena.getScores().get(p) >= am.maxFrags)
+						if (arena.getScores().get(p) >= max_frags)
 							am.arenaTimer.put(arena, 0);
 					} else {
-						if (arena.getTeamScore("Red") >= am.maxFrags || arena.getTeamScore("Blue") >= am.maxFrags) {
+						if (arena.getTeamScore("Red") >= max_frags || arena.getTeamScore("Blue") >= max_frags) {
 							am.arenaTimer.put(arena, 0);
 						}
 					}

@@ -56,10 +56,12 @@ public class SignEvents implements Listener {
 					int x = event.getBlock().getX();
 					int y = event.getBlock().getY();
 					int z = event.getBlock().getZ();
+					
+					Arena arena = am.getArena(aName);
 
 					event.setLine(0, "§7[§4Gib§6Craft§7]");
 					event.setLine(1, "§b" + aName);
-					event.setLine(2, "§e" + am.getArena(aName).getPlayerCount() + "/4");
+					event.setLine(2, "§e" + arena.getPlayerCount() + "/" + am.GetMaxPlayers(arena));
 
 					Location loc = new Location(world, x, y, z);
 					signsLoc.add(loc);
@@ -126,10 +128,13 @@ public class SignEvents implements Listener {
 	}
 
 	public static void updateSign(Sign sign, ArenaManager am, String arena) {
+		
+		Arena arena_data = am.getArena(arena);
+		
 		sign.setLine(0, "§7[§4Gib§6Craft§7]");
 		sign.setLine(1, "§b" + arena);
-		sign.setLine(2, "§e" + am.getArena(arena).getPlayerCount() + "/4 - " + am.getArena(arena).getMode().toString());
-		switch (am.getArena(arena).getStatus()) {
+		sign.setLine(2, "§e" + arena_data.getPlayerCount() + "/" + am.GetMaxPlayers(arena_data) + " - " + arena_data.getMode().toString());
+		switch (arena_data.getStatus()) {
 		case SETTING_UP:
 			sign.setLine(3, "§6SETTING UP");
 			break;

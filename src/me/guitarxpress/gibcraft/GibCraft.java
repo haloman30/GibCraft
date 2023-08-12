@@ -198,14 +198,17 @@ public class GibCraft extends JavaPlugin {
 			loadPlayers();
 		else
 			sqlGetter.loadAllPlayerValues();
-		loadArenas();
 
-		am.gameTime = getConfig().getInt("gameTime");
-		am.maxFrags = getConfig().getInt("maxFrags");
+		
+		am.SetDefaultGameTime(getConfig().getInt("gameTime"));
+		am.SetDefaultFragsLimit(getConfig().getInt("maxFrags"));
+		am.SetDefaultMaxPlayers(getConfig().getInt("maxPlayers", 4));
 		am.timeToStart = getConfig().getInt("timeToStart");
-		gm.respawnTime = getConfig().getInt("respawnTime");
+		gm.SetDefaultRespawnTime(getConfig().getInt("respawnTime"));
 		deathMessages1 = getConfig().getStringList("deathMessages1");
 		deathMessages2 = getConfig().getStringList("deathMessages2");
+
+		loadArenas();
 
 		if (dataCfg.get("Signs.Locations") != null) {
 			SignEvents.signsLoc = (List<Location>) dataCfg.getList("Signs.Locations");
@@ -317,11 +320,37 @@ public class GibCraft extends JavaPlugin {
 			Mode mode = Mode.fromString(aCfg.getString("Mode"));
 			Location corner1 = aCfg.getLocation("Corner1");
 			Location corner2 = aCfg.getLocation("Corner2");
+			
 			Arena a = new Arena(name, status, mode);
+			
+			if (aCfg.contains("maxFrags"))
+			{
+				a.max_frags_override = true;
+				a.max_frags = aCfg.getInt("maxFrags", am.GetMaxFrags(null));
+			}
+			
+			if (aCfg.contains("gameTime"))
+			{
+				a.game_time_override = true;
+				a.game_time = aCfg.getInt("gameTime", am.GetGameTime(null));
+			}
+			
+			if (aCfg.contains("maxPlayers"))
+			{
+				a.max_players_override = true;
+				a.max_players = aCfg.getInt("maxPlayers", am.GetMaxPlayers(null));
+			}
+			
+			if (aCfg.contains("respawnTime"))
+			{
+				a.respawn_time_override = true;
+				a.respawn_time = aCfg.getInt("respawnTime", gm.GetRespawnTime(null));
+			}
+			
 			a.setBoundaries(new Location[] { corner1, corner2 });
 			am.arenas.add(a);
 			am.arenaNames.add(name);
-			am.arenaTimer.put(a, am.gameTime);
+			am.arenaTimer.put(a, am.GetGameTime(a));
 		}
 	}
 
@@ -333,6 +362,43 @@ public class GibCraft extends JavaPlugin {
 		aCfg.set("Mode", arena.getMode().toString());
 		aCfg.set("Corner1", arena.getBoundaries()[0]);
 		aCfg.set("Corner2", arena.getBoundaries()[1]);
+		
+		if (arena.game_time_override)
+		{
+			aCfg.set("gameTime", arena.game_time);
+		}
+		else
+		{
+			aCfg.set("gameTime", null);
+		}
+		
+		if (arena.max_frags_override)
+		{
+			aCfg.set("maxFrags", arena.max_frags);
+		}
+		else
+		{
+			aCfg.set("maxFrags", null);
+		}
+		
+		if (arena.respawn_time_override)
+		{
+			aCfg.set("respawnTime", arena.respawn_time);
+		}
+		else
+		{
+			aCfg.set("respawnTime", null);
+		}
+		
+		if (arena.max_players_override)
+		{
+			aCfg.set("maxPlayers", arena.max_players);
+		}
+		else
+		{
+			aCfg.set("maxPlayers", null);
+		}
+		
 		cfg.saveArenaFile(arena.getName());
 	}
 

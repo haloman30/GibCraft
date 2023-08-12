@@ -42,6 +42,8 @@ public abstract class Language
 	public static String edit_mode_set_corner_2 = label + "Set arena corner 2";
 	
 	public static String powerup_spawned = label + "Powerup spawned.";
+	public static String setting_updated = label + "Changed setting §6%s§e to '%s'.";
+	public static String setting_reverted_to_default = label + "Reverted setting  §6%s§e to default value '%s'.";
 	
 	public static String powerup_title_format = "§ePOWERUP [§6%s§e]";
 	
@@ -66,6 +68,7 @@ public abstract class Language
 	public static String error_lobby_not_configured = error_prefix + "Lobby isn't set.";
 	public static String error_invalid_mode_header = error_prefix + "Invalid mode. Available modes: ";
 	public static String error_stats_no_games = error_prefix + "You haven't played a game yet.";
+	public static String error_invalid_setting_name = error_prefix + "Invalid setting name. Available settings: ";
 	
 	public static String error_arena_being_setup = error_prefix + "This arena is being setup.";
 	public static String error_arena_restarting = error_prefix + "This arena is restarting.";
@@ -74,4 +77,5 @@ public abstract class Language
 
 	public static String error_spectate_already_in_game = error_prefix + "You cannot spectate while already in a game.";
 	public static String error_powerup_spawn_raycast_fail = error_prefix + "Could not find a valid location to summon powerup.";
+	public static String error_setting_parse_fail_int = error_prefix + "Could not parse '%s' as a valid integer. Value has not been updated.";
 }

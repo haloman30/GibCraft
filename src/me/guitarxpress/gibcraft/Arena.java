@@ -48,6 +48,16 @@ public class Arena
 	
 	public ArrayList<Location> spawn_points;
 	public ArrayList<PowerUpPoint> powerup_points;
+	
+	public boolean game_time_override = false;
+	public boolean respawn_time_override = false;
+	public boolean max_frags_override = false;
+	public boolean max_players_override = false;
+	
+	public int game_time = -1;
+	public int respawn_time = 3;
+	public int max_frags = 20;
+	public int max_players = 4;
 
 	public Arena(String name, Status status, Mode mode) {
 		this.name = name;
@@ -96,7 +106,7 @@ public class Arena
 	}
 
 	public void addPlayer(Player player) {
-		if (players.size() >= mode.maxPlayers())
+		if (players.size() >= mode.maxPlayers(this))
 			return;
 		players.add(player);
 	}
@@ -176,8 +186,9 @@ public class Arena
 		return players.size() == 0;
 	}
 
-	public boolean isFull() {
-		return players.size() == mode.maxPlayers();
+	public boolean isFull() 
+	{
+		return players.size() == mode.maxPlayers(this);
 	}
 
 	public int getPlayerCount() {

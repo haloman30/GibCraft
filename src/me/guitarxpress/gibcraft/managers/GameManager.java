@@ -20,7 +20,7 @@ public class GameManager {
 
 	private int timeToStart = 3;
 	private Map<Arena, Integer> timeToStartMap = new HashMap<>();
-	public int respawnTime;
+	private int respawnTime;
 
 	int fadeIn = 2;
 	int stay = 1 * 20;
@@ -91,5 +91,20 @@ public class GameManager {
 				player.setGameMode(GameMode.ADVENTURE);
 			}
 		}, respawnTime * 20);
+	}
+	
+	public int GetRespawnTime(Arena arena)
+	{
+		if (arena == null || !arena.respawn_time_override)
+		{
+			return respawnTime;
+		}
+		
+		return arena.respawn_time;
+	}
+	
+	public void SetDefaultRespawnTime(int respawn_time)
+	{
+		respawnTime = respawn_time;
 	}
 }
