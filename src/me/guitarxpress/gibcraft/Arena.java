@@ -398,4 +398,27 @@ public class Arena
 		}
 		return null;
 	}
+	
+	public void BroadcastMessage(String message)
+	{
+		for (Player player : allPlayers)
+		{
+			player.sendMessage(message);
+		}
+		
+		for (Player player : spectators)
+		{
+			player.sendMessage(message);
+		}
+	}
+	
+	public ArrayList<Player> GetPlayersAndSpectators()
+	{
+		ArrayList<Player> combined_player_list = new ArrayList<Player>();
+		
+		combined_player_list.addAll(allPlayers);
+		combined_player_list.addAll(spectators);
+		
+		return combined_player_list;
+	}
 }

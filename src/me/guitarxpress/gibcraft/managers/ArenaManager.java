@@ -66,7 +66,7 @@ public class ArenaManager {
 		this.gm = plugin.getGameManager();
 
 		for (Arena arena : arenas) {
-			arenaTimer.put(arena, gameTime);
+			arenaTimer.put(arena, GetGameTime(arena));
 		}
 
 	}
@@ -262,7 +262,7 @@ public class ArenaManager {
 		Arena arena = new Arena(name, Status.SETTING_UP, mode);
 		arenas.add(arena);
 		arenaNames.add(name);
-		arenaTimer.put(arena, gameTime);
+		arenaTimer.put(arena, GetGameTime(arena));
 		plugin.saveArena(arena);
 		return true;
 	}
@@ -349,7 +349,7 @@ public class ArenaManager {
 			p.teleport(arena.selectRandomSpawn());
 		}
 
-		arenaTimer.put(arena, gameTime);
+		arenaTimer.put(arena, GetGameTime(arena));
 
 		gm.start(arena);
 	}

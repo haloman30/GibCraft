@@ -11,6 +11,7 @@ import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Particle;
+import org.bukkit.Sound;
 import org.bukkit.block.Sign;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.ArmorStand;
@@ -458,7 +459,19 @@ public class GibCraft extends JavaPlugin {
 
 							int timer = am.arenaTimer.get(arena);
 							if (timer > 0)
+							{
 								am.arenaTimer.put(arena, --timer);
+								
+								if (timer == 60 || timer == 30 || timer == 10)
+								{
+									arena.BroadcastMessage(String.format(Language.game_ending_warning, timer));
+									
+									for (Player player : arena.GetPlayersAndSpectators())
+									{
+										player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_HAT, 1f, 1f);
+									}
+								}
+							}
 							else {
 								am.arenaTimer.put(arena, 0);
 								if (arena.getMode() == Mode.FFA)

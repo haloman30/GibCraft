@@ -44,6 +44,7 @@ public abstract class Language
 	public static String powerup_spawned = label + "Powerup spawned.";
 	public static String setting_updated = label + "Changed setting §6%s§e to '%s'.";
 	public static String setting_reverted_to_default = label + "Reverted setting  §6%s§e to default value '%s'.";
+	public static String game_ending_warning = label + "%s seconds remaining!";
 	
 	public static String powerup_title_format = "§ePOWERUP [§6%s§e]";
 	
