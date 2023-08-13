@@ -55,6 +55,8 @@ public class ArenaManager {
 	private Map<Player, Float> oldExp = new HashMap<>();
 	private Map<Player, GameMode> oldMode = new HashMap<>();
 	private Map<Player, Integer> oldLevel = new HashMap<>();
+	
+	public HashMap<Player, Integer> active_stats_boards = new HashMap<Player, Integer>();
 
 	public ArenaManager(GibCraft plugin) {
 		this.plugin = plugin;
@@ -651,10 +653,18 @@ public class ArenaManager {
 		score11.setScore(0);
 
 		p.setScoreboard(board);
-
-		Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, () -> {
-			p.setScoreboard(manager.getNewScoreboard());
-		}, 10 * 20);
+		
+		active_stats_boards.put(p, 10);
+	}
+	
+	public void CloseAllStatsBoards()
+	{
+		for (Player player : active_stats_boards.keySet())
+		{
+			player.setScoreboard(Bukkit.getScoreboardManager().getNewScoreboard());
+		}
+		
+		active_stats_boards.clear();
 	}
 	
 	public int GetGameTime(Arena arena)

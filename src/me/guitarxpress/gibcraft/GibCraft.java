@@ -51,6 +51,8 @@ import me.guitarxpress.gibcraft.managers.GameManager;
 import me.guitarxpress.gibcraft.managers.ItemManager;
 import me.guitarxpress.gibcraft.sql.MySQL;
 import me.guitarxpress.gibcraft.sql.SQLGetter;
+import me.guitarxpress.gibcraft.tasks.SecondTask;
+import me.guitarxpress.gibcraft.tasks.TickTask;
 import me.guitarxpress.gibcraft.utils.ConfigClass;
 import me.guitarxpress.gibcraft.utils.Metrics;
 import me.guitarxpress.gibcraft.utils.RepeatingTask;
@@ -80,6 +82,9 @@ public class GibCraft extends JavaPlugin {
 	public List<String> deathMessages2 = new ArrayList<>();
 
 	private ProtocolManager protocolManager;
+	
+	private SecondTask second_task = null;
+	private TickTask tick_task = null;
 
 	public ArenaManager getArenaManager() {
 		return this.am;
@@ -169,15 +174,26 @@ public class GibCraft extends JavaPlugin {
 		startGlobalRunnableTick(this);
 
 		new Metrics(this, 15791);
+		
+		second_task = new SecondTask();
+		tick_task = new TickTask();
+		
+		Bukkit.getScheduler().scheduleAsyncRepeatingTask(this, second_task, 20L, 20L);
+		Bukkit.getScheduler().scheduleAsyncRepeatingTask(this, tick_task, 1L, 1L);
 
 		getServer().getConsoleSender().sendMessage("§7[§4Gib§6Craft§7] §aEnabled");
 	}
 
 	@Override
-	public void onDisable() {
+	public void onDisable() 
+	{
 		endAllArenas();
 		saveData();
 		sql.disconnect();
+		
+		Bukkit.getScheduler().cancelTasks(this);
+		am.CloseAllStatsBoards();
+		
 		getServer().getConsoleSender().sendMessage("§7[§4Gib§6Craft§7] §cDisabled");
 	}
 
