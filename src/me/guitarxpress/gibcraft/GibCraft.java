@@ -178,8 +178,8 @@ public class GibCraft extends JavaPlugin {
 		second_task = new SecondTask();
 		tick_task = new TickTask();
 		
-		Bukkit.getScheduler().scheduleAsyncRepeatingTask(this, second_task, 20L, 20L);
-		Bukkit.getScheduler().scheduleAsyncRepeatingTask(this, tick_task, 1L, 1L);
+		Bukkit.getScheduler().scheduleSyncRepeatingTask(this, second_task, 20L, 20L);
+		Bukkit.getScheduler().scheduleSyncRepeatingTask(this, tick_task, 1L, 1L);
 
 		getServer().getConsoleSender().sendMessage("§7[§4Gib§6Craft§7] §aEnabled");
 	}

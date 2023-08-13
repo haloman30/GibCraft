@@ -42,7 +42,7 @@ public class ArenaManager {
 	public List<String> arenaNames;
 	private Location lobby;
 	private Map<Player, Arena> playerInArena;
-	private Map<Arena, Integer> arenaCountdownTimer = new HashMap<>();
+	public Map<Arena, Integer> arenaCountdownTimer = new HashMap<>();
 	public Map<Arena, Integer> arenaTimer = new HashMap<>();
 	private int gameTime; // Time in seconds
 	private int maxFrags;
@@ -363,33 +363,6 @@ public class ArenaManager {
 			Bukkit.broadcastMessage(String.format(Language.arena_starting_warning_format, arena.getName(), timeToStart));
 
 		arenaCountdownTimer.put(arena, timeToStart);
-		new RepeatingTask(plugin, 0, 1 * 20) {
-
-			@Override
-			public void run() {
-				int time = arenaCountdownTimer.get(arena);
-				if ((time % 5 == 0 && time >= 5) || (time > 0 && time < 5)) {
-					for (Player player : arena.getPlayers()) {
-						player.sendMessage(String.format(Language.arena_starting_in_format, time));
-						player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_HAT, 1f, 1f);
-					}
-				} else if (time <= 0 && arena.getPlayerCount() >= arena.getMode().minPlayers()) {
-					start(arena);
-					cancel();
-				}
-
-				if (arena.getPlayerCount() < arena.getMode().minPlayers()) {
-					cancel();
-					arena.setStatus(Status.CANCELLED);
-					Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, () -> {
-						arena.setStatus(Status.JOINABLE);
-					}, 1 * 20);
-				}
-
-				arenaCountdownTimer.put(arena, time - 1);
-			}
-
-		};
 	}
 
 	public void endDuos(Arena arena) {
