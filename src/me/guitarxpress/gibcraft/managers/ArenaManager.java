@@ -31,7 +31,6 @@ import me.guitarxpress.gibcraft.enums.Mode;
 import me.guitarxpress.gibcraft.enums.Status;
 import me.guitarxpress.gibcraft.events.EditMode;
 import me.guitarxpress.gibcraft.sql.SQLGetter;
-import me.guitarxpress.gibcraft.utils.RepeatingTask;
 import me.guitarxpress.gibcraft.utils.Utils;
 
 public class ArenaManager {
@@ -356,11 +355,14 @@ public class ArenaManager {
 		gm.start(arena);
 	}
 
-	public void startTimer(Arena arena) {
+	public void startTimer(Arena arena) 
+	{
 		arena.setStatus(Status.STARTING);
 
 		if (arena.getPlayerCount() < arena.getMode().maxPlayers(arena))
+		{
 			Bukkit.broadcastMessage(String.format(Language.arena_starting_warning_format, arena.getName(), timeToStart));
+		}
 
 		arenaCountdownTimer.put(arena, timeToStart);
 	}

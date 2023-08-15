@@ -3,21 +3,27 @@ package me.guitarxpress.gibcraft.tasks;
 import java.util.ArrayList;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.Sound;
+import org.bukkit.block.Sign;
 import org.bukkit.entity.Player;
 
 import me.guitarxpress.gibcraft.Arena;
 import me.guitarxpress.gibcraft.GibCraft;
 import me.guitarxpress.gibcraft.Language;
 import me.guitarxpress.gibcraft.enums.Status;
+import me.guitarxpress.gibcraft.events.SignEvents;
 import me.guitarxpress.gibcraft.managers.ArenaManager;
+import me.guitarxpress.gibcraft.managers.GameManager;
+import me.guitarxpress.gibcraft.utils.Utils;
 
 public class SecondTask implements Runnable
-{
+{	
 	@Override
 	public void run()
 	{
 		ArenaManager am = GibCraft.instance.getArenaManager();
+		GameManager gm = GibCraft.instance.getGameManager();
 		
 		// Stats scoreboard removal
 		{
@@ -98,6 +104,94 @@ public class SecondTask implements Runnable
 			}
 		}
 		
+		// In-game arena countdown timer
+		{
+			ArrayList<Arena> arenas_to_remove = new ArrayList<Arena>();
+			
+			for (Arena arena : gm.timeToStartMap.keySet())
+			{
+				int timer = gm.timeToStartMap.get(arena);
+				switch (timer) {
+				case 3:
+					gm.sendStartNotification(arena, "3");
+					break;
+				case 2:
+					gm.sendStartNotification(arena, "2");
+					break;
+				case 1:
+					gm.sendStartNotification(arena, "1");
+					break;
+				case 0:
+					gm.sendStartNotification(arena, "Gib!");
+					
+					if (gm.hasEnoughPlayers(arena))
+					{
+						arena.setStatus(Status.ONGOING);
+					}
+					
+					arenas_to_remove.add(arena);
+					
+					break;
+				default:
+					if (!gm.hasEnoughPlayers(arena))
+					{
+						arena.setStatus(Status.JOINABLE);
+					}
+					
+					arenas_to_remove.add(arena);
+					
+					break;
+				}
+				
+				gm.timeToStartMap.put(arena, --timer);
+			}
+			
+			for (Arena arena : arenas_to_remove)
+			{
+				gm.timeToStartMap.remove(arena);
+			}
+		}
 		
+		// Update/remove arena signs
+		UpdateArenaSigns();
+		
+		// Update arenas
+		for (Arena arena : am.arenas)
+		{
+			arena.OnSecondPass();
+		}
+	}
+	
+	
+	private void UpdateArenaSigns()
+	{
+		if (SignEvents.signsLoc == null) 
+		{
+			return;
+		}
+		
+		ArenaManager am = GibCraft.instance.getArenaManager();
+		Sign toRemove = null;
+		
+		for (Location loc : SignEvents.signsLoc) 
+		{
+			Sign sign = (Sign) loc.getWorld().getBlockAt(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ()).getState();
+			String s = Utils.getNameFromString(sign.getLine(1));
+			
+			if (!am.exists(s)) 
+			{
+				toRemove = sign;
+				sign.getBlock().breakNaturally();
+			} 
+			else 
+			{
+				SignEvents.updateSign(sign, am, s);
+			}
+		}
+		
+		if (toRemove != null)
+		{
+			SignEvents.signsLoc.remove(toRemove.getLocation());
+		}
 	}
 }

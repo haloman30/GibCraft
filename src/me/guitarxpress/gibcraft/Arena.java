@@ -7,8 +7,11 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
+import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.Particle;
+import org.bukkit.Sound;
 import org.bukkit.World;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
@@ -16,10 +19,13 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.util.EulerAngle;
 
 import me.guitarxpress.gibcraft.enums.Mode;
 import me.guitarxpress.gibcraft.enums.PowerUpPointType;
 import me.guitarxpress.gibcraft.enums.Status;
+import me.guitarxpress.gibcraft.events.PlayerInteract;
+import me.guitarxpress.gibcraft.managers.ArenaManager;
 import me.guitarxpress.gibcraft.utils.Utils;
 
 public class Arena 
@@ -45,6 +51,8 @@ public class Arena
 
 	private Map<String, List<Player>> teams;
 	private Map<String, Integer> teamScore;
+	private int powerup_timer = 0;
+	int armor_stand_rotation = 0;
 	
 	public ArrayList<Location> spawn_points;
 	public ArrayList<PowerUpPoint> powerup_points;
@@ -420,5 +428,128 @@ public class Arena
 		combined_player_list.addAll(spectators);
 		
 		return combined_player_list;
+	}
+	
+	public void OnSecondPass()
+	{
+		if (status == Status.ONGOING)
+		{
+			ArenaManager am = GibCraft.instance.getArenaManager();
+			
+			// Update Powerups
+			{
+				if (powerup_timer > 25) 
+				{
+					AddNewRandomPowerup();
+					powerup_timer = 0;
+				} 
+				else 
+				{
+					powerup_timer++;
+				}
+				
+				UpdatePowerups();
+			}
+			
+			// Update Arena Timer
+			{
+				int timer = am.arenaTimer.get(this);
+				
+				if (timer > 0)
+				{
+					am.arenaTimer.put(this, --timer);
+					
+					if (timer == 60 || timer == 30 || timer == 10)
+					{
+						BroadcastMessage(String.format(Language.game_ending_warning, timer));
+						
+						for (Player player : GetPlayersAndSpectators())
+						{
+							player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_HAT, 1f, 1f);
+						}
+					}
+				}
+				else 
+				{
+					am.arenaTimer.put(this, 0);
+					
+					if (getMode() == Mode.FFA)
+					{
+						am.end(this);
+					}
+					else
+					{
+						am.endDuos(this);
+					}
+				}
+			}
+			
+			// Update Scoreboards
+			{
+				for (Player p : GetPlayersAndSpectators()) 
+				{
+					if (getMode() == Mode.FFA)
+					{
+						am.createScoreboardFFA(p);
+					}
+					else
+					{
+						am.createScoreboardDuos(p);
+					}
+
+					if (GibCraft.playerPowerup.containsKey(p)) 
+					{
+						if (p.getLevel() > 0)
+						{
+							p.setLevel(p.getLevel() - 1);
+						}
+					}
+				}
+			}
+		}
+	}
+	
+	public void OnTickPass()
+	{
+		if (status == Status.ONGOING) 
+		{
+			ArenaManager am = GibCraft.instance.getArenaManager();
+			
+			for (Player p : getAllPlayers()) 
+			{
+				if (am.isPlayerInArena(p) && !am.isSpectating(p)) 
+				{
+					if (PlayerInteract.cooldowns.containsKey(p)) 
+					{
+						long millis = System.currentTimeMillis() - PlayerInteract.cooldowns.get(p);
+						double cooldown = 800;
+						
+						if (GibCraft.playerPowerup.containsKey(p) && GibCraft.playerPowerup.get(p).getId() == 1)
+						{
+							cooldown = 400;
+						}
+						
+						if (millis < 0) 
+						{
+							p.setExp((float) ((millis + cooldown) / cooldown));
+						} 
+						else 
+						{
+							p.setExp(1);
+						}
+					}
+				}
+			}
+
+			for (ArmorStand as : powerups.keySet()) 
+			{
+				as.setHeadPose(new EulerAngle(0, Math.toRadians(armor_stand_rotation), 0));
+				as.getWorld().spawnParticle(Particle.REDSTONE,
+						as.getLocation().add(new Location(as.getWorld(), 0, 1.8, 0)).clone(), 2, .5, .5, .5,
+						1, new Particle.DustOptions(Color.YELLOW, (float) 1.0));
+			}
+		}
+		
+		armor_stand_rotation++;
 	}
 }

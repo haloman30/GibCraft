@@ -55,7 +55,6 @@ import me.guitarxpress.gibcraft.tasks.SecondTask;
 import me.guitarxpress.gibcraft.tasks.TickTask;
 import me.guitarxpress.gibcraft.utils.ConfigClass;
 import me.guitarxpress.gibcraft.utils.Metrics;
-import me.guitarxpress.gibcraft.utils.RepeatingTask;
 import me.guitarxpress.gibcraft.utils.Utils;
 
 public class GibCraft extends JavaPlugin {
@@ -170,8 +169,6 @@ public class GibCraft extends JavaPlugin {
 		}
 
 		createPowerUps();
-		startGlobalRunnableSecond(this);
-		startGlobalRunnableTick(this);
 
 		new Metrics(this, 15791);
 		
@@ -432,141 +429,4 @@ public class GibCraft extends JavaPlugin {
 	public void setLoadFromSQL(boolean loadFromSQL) {
 		this.loadFromSQL = loadFromSQL;
 	}
-
-	// Runs every second
-	public void startGlobalRunnableSecond(GibCraft plugin) {
-		new RepeatingTask(plugin, 0, 1 * 20) {
-			int puTimer = 0;
-
-			@Override
-			public void run() {
-				if (SignEvents.signsLoc != null) {
-					Sign toRemove = null;
-					for (Location loc : SignEvents.signsLoc) {
-						Sign sign = (Sign) loc.getWorld().getBlockAt(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ())
-								.getState();
-						String s = Utils.getNameFromString(sign.getLine(1));
-						if (!am.exists(s)) {
-							toRemove = sign;
-							sign.getBlock().breakNaturally();
-						} else {
-							SignEvents.updateSign(sign, am, s);
-						}
-					}
-					if (toRemove != null)
-						SignEvents.signsLoc.remove(toRemove.getLocation());
-				}
-
-				if (am.arenas != null)
-					for (Arena arena : am.arenas) {
-						if (arena.getStatus() == Status.ONGOING) 
-						{
-							if (puTimer > 25) 
-							{
-								arena.AddNewRandomPowerup();
-								puTimer = 0;
-							} 
-							else 
-							{
-								puTimer++;
-							}
-							
-							arena.UpdatePowerups();
-
-							int timer = am.arenaTimer.get(arena);
-							if (timer > 0)
-							{
-								am.arenaTimer.put(arena, --timer);
-								
-								if (timer == 60 || timer == 30 || timer == 10)
-								{
-									arena.BroadcastMessage(String.format(Language.game_ending_warning, timer));
-									
-									for (Player player : arena.GetPlayersAndSpectators())
-									{
-										player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_HAT, 1f, 1f);
-									}
-								}
-							}
-							else {
-								am.arenaTimer.put(arena, 0);
-								if (arena.getMode() == Mode.FFA)
-									am.end(arena);
-								else
-									am.endDuos(arena);
-							}
-
-							for (Player p : arena.getPlayers()) 
-							{
-								if (arena.getMode() == Mode.FFA)
-									am.createScoreboardFFA(p);
-								else
-									am.createScoreboardDuos(p);
-
-								if (playerPowerup.containsKey(p)) {
-									if (p.getLevel() > 0)
-										p.setLevel(p.getLevel() - 1);
-								}
-							}
-							
-							for (Player p : arena.getSpectators()) 
-							{
-								if (arena.getMode() == Mode.FFA)
-									am.createScoreboardFFA(p);
-								else
-									am.createScoreboardDuos(p);
-
-								if (playerPowerup.containsKey(p)) {
-									if (p.getLevel() > 0)
-										p.setLevel(p.getLevel() - 1);
-								}
-							}
-						}
-					}
-
-			}
-		};
-	}
-
-	// Runs every tick
-	public void startGlobalRunnableTick(GibCraft plugin) {
-		new RepeatingTask(plugin, 0, 1) {
-			int asRotation = 0;
-
-			@Override
-			public void run() {
-				for (Arena arena : am.arenas) {
-					if (arena.getStatus() == Status.ONGOING) {
-						for (Player p : arena.getAllPlayers()) {
-							if (am.isPlayerInArena(p) && !am.isSpectating(p)) {
-								if (PlayerInteract.cooldowns.containsKey(p)) {
-									long millis = System.currentTimeMillis() - PlayerInteract.cooldowns.get(p);
-									double cooldown = 800;
-									if (playerPowerup.containsKey(p) && playerPowerup.get(p).getId() == 1)
-										cooldown = 400;
-									if (millis < 0) {
-										p.setExp((float) ((millis + cooldown) / cooldown));
-									} else {
-										p.setExp(1);
-									}
-								}
-							}
-
-						}
-
-						for (ArmorStand as : arena.powerups.keySet()) 
-						{
-							as.setHeadPose(new EulerAngle(0, Math.toRadians(asRotation), 0));
-							as.getWorld().spawnParticle(Particle.REDSTONE,
-									as.getLocation().add(new Location(as.getWorld(), 0, 1.8, 0)).clone(), 2, .5, .5, .5,
-									1, new Particle.DustOptions(Color.YELLOW, (float) 1.0));
-						}
-					}
-					asRotation++;
-				}
-
-			}
-		};
-	}
-
 }

@@ -11,7 +11,6 @@ import org.bukkit.entity.Player;
 import me.guitarxpress.gibcraft.Arena;
 import me.guitarxpress.gibcraft.GibCraft;
 import me.guitarxpress.gibcraft.enums.Status;
-import me.guitarxpress.gibcraft.utils.RepeatingTask;
 import me.guitarxpress.gibcraft.utils.Utils;
 
 public class GameManager {
@@ -19,7 +18,7 @@ public class GameManager {
 	private GibCraft plugin;
 
 	private int timeToStart = 3;
-	private Map<Arena, Integer> timeToStartMap = new HashMap<>();
+	public Map<Arena, Integer> timeToStartMap = new HashMap<>();
 	private int respawnTime;
 
 	int fadeIn = 2;
@@ -33,40 +32,10 @@ public class GameManager {
 		this.plugin = plugin;
 	}
 
-	public void start(Arena arena) {
+	public void start(Arena arena) 
+	{
 		arena.setStatus(Status.STARTUP);
 		timeToStartMap.put(arena, timeToStart);
-
-		new RepeatingTask(plugin, 0, 1 * 20) {
-
-			@Override
-			public void run() {
-				int timer = timeToStartMap.get(arena);
-				switch (timer) {
-				case 3:
-					sendStartNotification(arena, "3");
-					break;
-				case 2:
-					sendStartNotification(arena, "2");
-					break;
-				case 1:
-					sendStartNotification(arena, "1");
-					break;
-				case 0:
-					sendStartNotification(arena, "Gib!");
-					if (hasEnoughPlayers(arena))
-						arena.setStatus(Status.ONGOING);
-					break;
-				default:
-					if (!hasEnoughPlayers(arena))
-						arena.setStatus(Status.JOINABLE);
-					cancel();
-					break;
-				}
-				timeToStartMap.put(arena, --timer);
-			}
-
-		};
 	}
 
 	public boolean hasEnoughPlayers(Arena arena) {
