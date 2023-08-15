@@ -179,7 +179,7 @@ public class PlayerInteract implements Listener {
 						String random_message = ChatColor.translateAlternateColorCodes('&', String.format(primary_message
 							+ " " + secondary_message, hit.getName(), p.getName()));
 						
-						for (Player player : arena.getAllPlayers()) 
+						for (Player player : arena.GetPlayersAndSpectators()) 
 						{
 							player.sendMessage(random_message);
 							

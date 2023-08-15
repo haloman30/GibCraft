@@ -481,9 +481,9 @@ public class Commands implements CommandExecutor {
 			return;
 		}
 		
-		if (args.length < 4)
+		if (args.length < 3)
 		{
-			p.sendMessage(String.format(Language.error_missing_args_format, "gib settings <arena> <option> <value|reset>"));
+			p.sendMessage(String.format(Language.error_missing_args_format, "gib settings <arena> <option> [value|reset]"));
 			return;
 		}
 		
@@ -495,98 +495,124 @@ public class Commands implements CommandExecutor {
 		
 		Arena arena = am.getArena(args[1]);
 		String setting_name = args[2].toLowerCase();
-		String setting_value = args[3].toLowerCase();
 		
-		switch (setting_name)
+		if (args.length >= 4)
 		{
-		case "maxplayers":
-			if (setting_value.equalsIgnoreCase("reset"))
-			{
-				arena.max_players_override = false;
-				p.sendMessage(String.format(Language.setting_reverted_to_default, "maxplayers", am.GetMaxPlayers(null)));
-			}
-			else
-			{
-				try
-				{
-					arena.max_players = Integer.parseInt(setting_value);
-					arena.max_players_override = true;
-					p.sendMessage(String.format(Language.setting_updated, "maxplayers", setting_value));
-				}
-				catch (Exception ex)
-				{
-					p.sendMessage(String.format(Language.error_setting_parse_fail_int, setting_value));
-				}
-			}
+			String setting_value = args[3].toLowerCase();
 			
-			break;
-		case "gametime":
-			if (setting_value.equalsIgnoreCase("reset"))
+			switch (setting_name)
 			{
-				arena.game_time_override = false;
-				p.sendMessage(String.format(Language.setting_reverted_to_default, "gametime", am.GetGameTime(null)));
-			}
-			else
-			{
-				try
+			case "maxplayers":
+				if (setting_value.equalsIgnoreCase("reset"))
 				{
-					arena.game_time = Integer.parseInt(setting_value);
-					arena.game_time_override = true;
-					p.sendMessage(String.format(Language.setting_updated, "gametime", setting_value));
+					arena.max_players_override = false;
+					p.sendMessage(String.format(Language.setting_reverted_to_default, "maxplayers", am.GetMaxPlayers(null)));
 				}
-				catch (Exception ex)
+				else
 				{
-					p.sendMessage(String.format(Language.error_setting_parse_fail_int, setting_value));
+					try
+					{
+						arena.max_players = Integer.parseInt(setting_value);
+						arena.max_players_override = true;
+						p.sendMessage(String.format(Language.setting_updated, "maxplayers", setting_value));
+					}
+					catch (Exception ex)
+					{
+						p.sendMessage(String.format(Language.error_setting_parse_fail_int, setting_value));
+					}
 				}
-			}
-			
-			break;
-		case "maxfrags":
-			if (setting_value.equalsIgnoreCase("reset"))
-			{
-				arena.max_frags_override = false;
-				p.sendMessage(String.format(Language.setting_reverted_to_default, "maxfrags", am.GetMaxFrags(null)));
-			}
-			else
-			{
-				try
+				
+				break;
+			case "gametime":
+				if (setting_value.equalsIgnoreCase("reset"))
 				{
-					arena.max_frags = Integer.parseInt(setting_value);
-					arena.max_frags_override = true;
-					p.sendMessage(String.format(Language.setting_updated, "maxfrags", setting_value));
+					arena.game_time_override = false;
+					p.sendMessage(String.format(Language.setting_reverted_to_default, "gametime", am.GetGameTime(null)));
 				}
-				catch (Exception ex)
+				else
 				{
-					p.sendMessage(String.format(Language.error_setting_parse_fail_int, setting_value));
+					try
+					{
+						arena.game_time = Integer.parseInt(setting_value);
+						arena.game_time_override = true;
+						p.sendMessage(String.format(Language.setting_updated, "gametime", setting_value));
+					}
+					catch (Exception ex)
+					{
+						p.sendMessage(String.format(Language.error_setting_parse_fail_int, setting_value));
+					}
 				}
-			}
-			
-			break;
-		case "respawntime":
-			if (setting_value.equalsIgnoreCase("reset"))
-			{
-				arena.respawn_time_override = false;
-				p.sendMessage(String.format(Language.setting_reverted_to_default, "respawntime", GibCraft.instance.getGameManager().GetRespawnTime(null)));
-			}
-			else
-			{
-				try
+				
+				break;
+			case "maxfrags":
+				if (setting_value.equalsIgnoreCase("reset"))
 				{
-					arena.respawn_time = Integer.parseInt(setting_value);
-					arena.respawn_time_override = true;
-					p.sendMessage(String.format(Language.setting_updated, "respawntime", setting_value));
+					arena.max_frags_override = false;
+					p.sendMessage(String.format(Language.setting_reverted_to_default, "maxfrags", am.GetMaxFrags(null)));
 				}
-				catch (Exception ex)
+				else
 				{
-					p.sendMessage(String.format(Language.error_setting_parse_fail_int, setting_value));
+					try
+					{
+						arena.max_frags = Integer.parseInt(setting_value);
+						arena.max_frags_override = true;
+						p.sendMessage(String.format(Language.setting_updated, "maxfrags", setting_value));
+					}
+					catch (Exception ex)
+					{
+						p.sendMessage(String.format(Language.error_setting_parse_fail_int, setting_value));
+					}
 				}
+				
+				break;
+			case "respawntime":
+				if (setting_value.equalsIgnoreCase("reset"))
+				{
+					arena.respawn_time_override = false;
+					p.sendMessage(String.format(Language.setting_reverted_to_default, "respawntime", GibCraft.instance.getGameManager().GetRespawnTime(null)));
+				}
+				else
+				{
+					try
+					{
+						arena.respawn_time = Integer.parseInt(setting_value);
+						arena.respawn_time_override = true;
+						p.sendMessage(String.format(Language.setting_updated, "respawntime", setting_value));
+					}
+					catch (Exception ex)
+					{
+						p.sendMessage(String.format(Language.error_setting_parse_fail_int, setting_value));
+					}
+				}
+				
+				break;
+			default:
+				p.sendMessage(Language.error_invalid_setting_name + "maxplayers, gametime, maxfrags, respawntime");
+				break;
 			}
-			
-			break;
-		default:
-			p.sendMessage(Language.error_invalid_setting_name + "maxplayers, gametime, maxfrags, respawntime");
-			break;
 		}
+		else
+		{
+			switch (setting_name)
+			{
+			case "maxplayers":
+				p.sendMessage(String.format(Language.setting_current_value_format, "maxplayers", arena.max_players));
+				break;
+			case "gametime":
+				p.sendMessage(String.format(Language.setting_current_value_format, "gametime", arena.game_time));
+				break;
+			case "maxfrags":
+				p.sendMessage(String.format(Language.setting_current_value_format, "maxfrags", arena.max_frags));
+				break;
+			case "respawntime":
+				p.sendMessage(String.format(Language.setting_current_value_format, "respawntime", arena.respawn_time));
+				break;
+			default:
+				p.sendMessage(Language.error_invalid_setting_name + "maxplayers, gametime, maxfrags, respawntime");
+				break;
+			}
+		}
+		
 	}
 
 	@Override

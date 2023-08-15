@@ -79,12 +79,12 @@ public class PlayerMove implements Listener {
 							Utils.increaseTeamScore(arena, arena.getPlayerTeam(killer));
 
 						Utils.addFrag(killer, plugin.playerStats);
-						for (Player player : arena.getAllPlayers()) {
+						for (Player player : arena.GetPlayersAndSpectators()) {
 							player.sendMessage("§f" + killer.getName() + " knocked " + p.getName() + " off the arena!");
 						}
 						gm.knockedBy.remove(p);
 					} else {
-						for (Player player : arena.getAllPlayers()) {
+						for (Player player : arena.GetPlayersAndSpectators()) {
 							player.sendMessage("§f" + p.getName() + " fell off. Literally.");
 						}
 					}

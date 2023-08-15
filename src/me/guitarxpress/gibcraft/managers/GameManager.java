@@ -43,7 +43,7 @@ public class GameManager {
 	}
 
 	public void sendStartNotification(Arena arena, String string) {
-		for (Player player : arena.getAllPlayers()) {
+		for (Player player : arena.GetPlayersAndSpectators()) {
 			player.sendTitle("§6" + string, "", fadeIn, stay, fadeOut);
 			player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 1f, string.equals("Gib!") ? 2f : 1f);
 		}

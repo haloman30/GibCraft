@@ -23,6 +23,7 @@ import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.EulerAngle;
 
+import me.guitarxpress.gibcraft.Logger.LogLevel;
 import me.guitarxpress.gibcraft.enums.Mode;
 import me.guitarxpress.gibcraft.enums.PowerUpPointType;
 import me.guitarxpress.gibcraft.enums.Status;
@@ -40,14 +41,11 @@ public class Arena
 	
 	// -- Arena Configuration --
 	
-	FileConfiguration arena_config = null;
-	File arena_config_file = null;
+	public FileConfiguration arena_config = null;
+	public File arena_config_file = null;
 
 	private String name;
 	private Status status;
-	private Mode mode;
-	private List<Player> players;
-	private List<Player> spectators;
 	private Location[] boundaries;
 	public ArrayList<Location> spawn_points;
 	public ArrayList<PowerUpPoint> powerup_points;
@@ -62,9 +60,12 @@ public class Arena
 	
 	// -- Game Session Data --
 
+	private Mode mode;
+	private List<Player> players;
+	private List<Player> spectators;
 	private Map<Player, Integer> scores;
 
-	private List<Player> allPlayers;
+	//private List<Player> allPlayers;
 
 	public HashMap<ArmorStand, Integer> powerups = new HashMap<ArmorStand, Integer>();
 
@@ -84,7 +85,7 @@ public class Arena
 		this.spectators = new ArrayList<>();
 		this.boundaries = new Location[2];
 		this.scores = new HashMap<>();
-		this.allPlayers = new ArrayList<>();
+		//this.allPlayers = new ArrayList<>();
 		this.powerups = new HashMap<ArmorStand, Integer>();
 		this.teams = new HashMap<>();
 		this.teamScore = new HashMap<>();
@@ -149,7 +150,7 @@ public class Arena
 		spectators.remove(player);
 	}
 
-	public void addToArena(Player player) {
+	/*public void addToArena(Player player) {
 		allPlayers.add(player);
 	}
 
@@ -159,7 +160,7 @@ public class Arena
 
 	public List<Player> getAllPlayers() {
 		return allPlayers;
-	}
+	}*/
 
 	public Location[] getBoundaries() {
 		return boundaries;
@@ -418,7 +419,7 @@ public class Arena
 	
 	public void BroadcastMessage(String message)
 	{
-		for (Player player : allPlayers)
+		for (Player player : players)
 		{
 			player.sendMessage(message);
 		}
@@ -433,7 +434,7 @@ public class Arena
 	{
 		ArrayList<Player> combined_player_list = new ArrayList<Player>();
 		
-		combined_player_list.addAll(allPlayers);
+		combined_player_list.addAll(players);
 		combined_player_list.addAll(spectators);
 		
 		return combined_player_list;
@@ -522,7 +523,7 @@ public class Arena
 		{
 			ArenaManager am = GibCraft.instance.getArenaManager();
 			
-			for (Player p : getAllPlayers()) 
+			for (Player p : players) 
 			{
 				if (am.isPlayerInArena(p) && !am.isSpectating(p)) 
 				{
@@ -558,5 +559,60 @@ public class Arena
 		}
 		
 		armor_stand_rotation++;
+	}
+	
+	public void SaveConfig()
+	{
+		arena_config.set("Name", name);
+		arena_config.set("Status", Status.valueToString(status));
+		arena_config.set("Mode", mode.toString());
+		arena_config.set("Corner1", boundaries[0]);
+		arena_config.set("Corner2", boundaries[1]);
+		
+		if (game_time_override)
+		{
+			arena_config.set("gameTime", game_time);
+		}
+		else
+		{
+			arena_config.set("gameTime", null);
+		}
+		
+		if (max_frags_override)
+		{
+			arena_config.set("maxFrags", max_frags);
+		}
+		else
+		{
+			arena_config.set("maxFrags", null);
+		}
+		
+		if (respawn_time_override)
+		{
+			arena_config.set("respawnTime", respawn_time);
+		}
+		else
+		{
+			arena_config.set("respawnTime", null);
+		}
+		
+		if (max_players_override)
+		{
+			arena_config.set("maxPlayers", max_players);
+		}
+		else
+		{
+			arena_config.set("maxPlayers", null);
+		}
+		
+		try
+		{
+			arena_config.save(arena_config_file);
+			Logger.LogEvent("Saved configuration file for arena '" + name + "'");
+		}
+		catch (Exception ex)
+		{
+			Logger.LogEvent("Failed to save file for arena: " + name + " §e-> §c" + ex, LogLevel.ERROR);
+		}
 	}
 }

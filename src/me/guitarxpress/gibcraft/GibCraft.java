@@ -1,5 +1,6 @@
 package me.guitarxpress.gibcraft;
 
+import java.io.File;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -14,6 +15,7 @@ import org.bukkit.Particle;
 import org.bukkit.Sound;
 import org.bukkit.block.Sign;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
@@ -27,6 +29,7 @@ import org.bukkit.util.EulerAngle;
 import com.comphenix.protocol.ProtocolLibrary;
 import com.comphenix.protocol.ProtocolManager;
 
+import me.guitarxpress.gibcraft.Logger.LogLevel;
 import me.guitarxpress.gibcraft.enums.Mode;
 import me.guitarxpress.gibcraft.enums.Status;
 import me.guitarxpress.gibcraft.events.CommandPreprocess;
@@ -325,10 +328,27 @@ public class GibCraft extends JavaPlugin {
 	public void loadArenas() {
 		cfg.loadArenaFiles();
 		List<String> arenas = cfg.getArenaNameList();
+		
 		if (arenas == null)
+		{
 			return;
-		for (String arena : arenas) {
-			FileConfiguration aCfg = cfg.getArenaCfg(arena);
+		}
+		
+		for (File arena_config_file : cfg.GetArenaFiles()) 
+		{
+			FileConfiguration aCfg = new YamlConfiguration();
+			
+			try
+			{
+				aCfg.load(arena_config_file);
+			}
+			catch (Exception ex)
+			{
+				Logger.LogEvent("Failed to load configuration file '" + arena_config_file.getName()
+					+ "', skipping: " + ex.getMessage(), LogLevel.WARN);
+				continue;
+			}
+			
 			String name = aCfg.getString("Name");
 			Status status = Status.fromString(aCfg.getString("Status"));
 			Mode mode = Mode.fromString(aCfg.getString("Mode"));
@@ -336,6 +356,9 @@ public class GibCraft extends JavaPlugin {
 			Location corner2 = aCfg.getLocation("Corner2");
 			
 			Arena a = new Arena(name, status, mode);
+			
+			a.arena_config_file = arena_config_file;
+			a.arena_config = aCfg;
 			
 			if (aCfg.contains("maxFrags"))
 			{
@@ -363,66 +386,26 @@ public class GibCraft extends JavaPlugin {
 			
 			a.setBoundaries(new Location[] { corner1, corner2 });
 			am.arenas.add(a);
-			am.arenaNames.add(name);
 			a.arena_timer = am.GetGameTime(a);
 		}
 	}
 
-	public void saveArena(Arena arena) {
+	public void saveArena(Arena arena) 
+	{
 		cfg.createNewArenaFiles();
-		FileConfiguration aCfg = cfg.getArenaCfg(arena.getName());
-		aCfg.set("Name", arena.getName());
-		aCfg.set("Status", Status.valueToString(arena.getStatus()));
-		aCfg.set("Mode", arena.getMode().toString());
-		aCfg.set("Corner1", arena.getBoundaries()[0]);
-		aCfg.set("Corner2", arena.getBoundaries()[1]);
-		
-		if (arena.game_time_override)
-		{
-			aCfg.set("gameTime", arena.game_time);
-		}
-		else
-		{
-			aCfg.set("gameTime", null);
-		}
-		
-		if (arena.max_frags_override)
-		{
-			aCfg.set("maxFrags", arena.max_frags);
-		}
-		else
-		{
-			aCfg.set("maxFrags", null);
-		}
-		
-		if (arena.respawn_time_override)
-		{
-			aCfg.set("respawnTime", arena.respawn_time);
-		}
-		else
-		{
-			aCfg.set("respawnTime", null);
-		}
-		
-		if (arena.max_players_override)
-		{
-			aCfg.set("maxPlayers", arena.max_players);
-		}
-		else
-		{
-			aCfg.set("maxPlayers", null);
-		}
-		
-		cfg.saveArenaFile(arena.getName());
+		arena.SaveConfig();
 	}
 
-	public void saveArenas() {
-		for (Arena arena : am.arenas) {
+	public void saveArenas() 
+	{
+		for (Arena arena : am.arenas) 
+		{
 			saveArena(arena);
 		}
 	}
 
-	public boolean isLoadFromSQL() {
+	public boolean isLoadFromSQL() 
+	{
 		return loadFromSQL;
 	}
 

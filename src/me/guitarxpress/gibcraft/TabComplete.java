@@ -90,9 +90,9 @@ public class TabComplete implements TabCompleter
 								|| player.hasPermission(cmd + ".setstatus") || player.hasPermission(cmd + ".delete")
 								|| player.hasPermission(cmd + ".edit"))
 						{
-							for (String name : am.arenaNames)
+							for (Arena arena : am.arenas)
 							{
-								list.add(name);
+								list.add(arena.getName());
 							}
 						}
 					} else if (args[0].equalsIgnoreCase("create"))

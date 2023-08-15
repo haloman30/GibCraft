@@ -11,6 +11,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 
+import me.guitarxpress.gibcraft.Arena;
 import me.guitarxpress.gibcraft.GibCraft;
 import me.guitarxpress.gibcraft.Stats;
 import me.guitarxpress.gibcraft.managers.ArenaManager;
@@ -28,10 +29,10 @@ public class ConfigClass {
 	public String playerPath = "Players";
 	public String arenaPath = "Arenas";
 
-	private Map<String, FileConfiguration> arenaConfigs = new HashMap<>();
+	//private Map<String, FileConfiguration> arenaConfigs = new HashMap<>();
 	private Map<String, FileConfiguration> playerConfigs = new HashMap<>();
 
-	private Map<String, File> arenaFiles = new HashMap<>();
+	//private Map<String, File> arenaFiles = new HashMap<>();
 	private Map<String, File> playerFiles = new HashMap<>();
 
 	private ArenaManager am;
@@ -58,65 +59,65 @@ public class ConfigClass {
 		dataCfg = YamlConfiguration.loadConfiguration(dataFile);
 	}
 
-	public void createNewArenaFiles() {
+	public void createNewArenaFiles() 
+	{
 		if (!arenaFolder.exists())
+		{
 			arenaFolder.mkdir();
+		}
 
-		for (String arena : am.arenaNames) {
-			File arenaFile = new File(arenaFolder, arena + ".yml");
-			if (!arenaFile.exists())
-				try {
-					arenaFile.createNewFile();
-				} catch (IOException e) {
-					Bukkit.getServer().getConsoleSender().sendMessage(
-							"§c[" + plugin.getName() + "] Failed to file for arena: " + arena + " §e-> §c" + e);
+		for (Arena arena : am.arenas) 
+		{
+			arena.arena_config_file = new File(arenaFolder, arena.getName() + ".yml");
+			
+			if (!arena.arena_config_file.exists())
+			{
+				try 
+				{
+					arena.arena_config_file.createNewFile();
+				} 
+				catch (IOException e) 
+				{
+					Bukkit.getServer().getConsoleSender().sendMessage("§c[" + plugin.getName() + "] Failed to create file for arena: " + arena + " §e-> §c" + e);
 				}
-			arenaFiles.put(arena, arenaFile);
+			}
 		}
 	}
 
-	public void loadArenaFiles() {
+	public void loadArenaFiles() 
+	{
 		if (getArenaNameList() == null)
+		{
 			return;
-		for (String arena : getArenaNameList()) {
-			File arenaFile = new File(arenaFolder, arena + ".yml");
-			if (!arenaFile.exists())
-				try {
-					arenaFile.createNewFile();
-				} catch (IOException e) {
+		}
+		
+		for (Arena arena : am.arenas) 
+		{
+			arena.arena_config_file = new File(arenaFolder, arena + ".yml");
+			
+			if (!arena.arena_config_file.exists())
+			{
+				try 
+				{
+					arena.arena_config_file.createNewFile();
+				} 
+				catch (IOException e) 
+				{
 					Bukkit.getServer().getConsoleSender().sendMessage(
-							"§c[" + plugin.getName() + "] Failed to file for arena: " + arena + " §e-> §c" + e);
+							"§c[" + plugin.getName() + "] Failed to load file for arena: " + arena + " §e-> §c" + e);
 				}
-			arenaFiles.put(arena, arenaFile);
+			}
 		}
 	}
 
-	public File getArenaFile(String name) {
-		return arenaFiles.get(name);
-	}
-
-	public FileConfiguration getArenaCfg(String name) {
-		if (arenaConfigs.containsKey(name))
-			return arenaConfigs.get(name);
-		File arenaFile = getArenaFile(name);
-		arenaConfigs.put(name, YamlConfiguration.loadConfiguration(arenaFile));
-		return arenaConfigs.get(name);
-	}
-
-	public void saveArenaFile(String name) {
-		File arenaFile = getArenaFile(name);
-		FileConfiguration arenaCfg = getArenaCfg(name);
-		try {
-			arenaCfg.save(arenaFile);
-		} catch (IOException e) {
-			Bukkit.getServer().getConsoleSender().sendMessage(
-					"§c[" + plugin.getName() + "] Failed to save file for arena: " + name + " §e-> §c" + e);
+	public void deleteArena(String name) 
+	{
+		Arena arena = am.getArena(name);
+		
+		if (arena != null && arena.arena_config_file != null)
+		{
+			arena.arena_config_file.delete();
 		}
-	}
-
-	public void deleteArena(String name) {
-		File arenaFile = getArenaFile(name);
-		arenaFile.delete();
 	}
 
 	public void createNewPlayerFiles() {
@@ -175,6 +176,25 @@ public class ConfigClass {
 			}
 		}
 
+	}
+	
+	public List<File> GetArenaFiles()
+	{
+		File[] array = arenaFolder.listFiles();
+		
+		if (array == null)
+		{
+			return null;
+		}
+		
+		ArrayList<File> arena_files = new ArrayList<File>();
+		
+		for (int i = 0; i < array.length; i++) 
+		{
+			arena_files.add(array[i]);
+		}
+		
+		return arena_files;
 	}
 
 	public List<String> getArenaNameList() {

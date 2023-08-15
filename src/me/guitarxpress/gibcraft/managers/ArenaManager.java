@@ -38,11 +38,7 @@ public class ArenaManager {
 	private GibCraft plugin;
 
 	public List<Arena> arenas;
-	public List<String> arenaNames;
 	private Location lobby;
-	private Map<Player, Arena> playerInArena;
-	//public Map<Arena, Integer> arenaCountdownTimer = new HashMap<>();
-	//public Map<Arena, Integer> arenaTimer = new HashMap<>();
 	private int gameTime; // Time in seconds
 	private int maxFrags;
 	private int maxPlayers;
@@ -62,8 +58,6 @@ public class ArenaManager {
 		this.data = plugin.getSQLGetter();
 
 		arenas = new ArrayList<>();
-		arenaNames = new ArrayList<>();
-		playerInArena = new HashMap<>();
 		this.gm = plugin.getGameManager();
 
 		for (Arena arena : arenas) 
@@ -96,12 +90,30 @@ public class ArenaManager {
 		return true;
 	}
 
-	public Arena getPlayerArena(Player player) {
-		return isPlayerInArena(player) ? playerInArena.get(player) : null;
+	public Arena getPlayerArena(Player player) 
+	{
+		for (Arena arena : arenas)
+		{
+			if (arena.GetPlayersAndSpectators().contains(player))
+			{
+				return arena;
+			}
+		}
+		
+		return null;
 	}
 
-	public boolean isPlayerInArena(Player player) {
-		return playerInArena.containsKey(player);
+	public boolean isPlayerInArena(Player player) 
+	{
+		for (Arena arena : arenas)
+		{
+			if (arena.GetPlayersAndSpectators().contains(player))
+			{
+				return true;
+			}
+		}
+		
+		return false;
 	}
 
 	public void addPlayerToArena(Player player, Arena arena) {
@@ -112,11 +124,9 @@ public class ArenaManager {
 					new Stats(player.getUniqueId().toString(), 0, 0, 0, 0, 0, 0, 0, 0));
 
 		arena.addPlayer(player);
-		arena.addToArena(player);
 		arena.addScore(player, 0);
-		playerInArena.put(player, arena);
 
-		for (Player p : arena.getAllPlayers())
+		for (Player p : arena.GetPlayersAndSpectators())
 		{
 			p.sendMessage(String.format(Language.player_joined_format, player.getName(), arena.getPlayerCount(), arena.getMode().maxPlayers(arena)));
 		}
@@ -141,10 +151,8 @@ public class ArenaManager {
 		arena.addToTeam(team, player);
 
 		arena.addPlayer(player);
-		arena.addToArena(player);
-		playerInArena.put(player, arena);
 
-		for (Player p : arena.getAllPlayers())
+		for (Player p : arena.GetPlayersAndSpectators())
 		{
 			p.sendMessage(String.format(Language.player_joined_format, player.getName(), arena.getPlayerCount(), arena.getMode().maxPlayers(arena)));
 		}
@@ -159,12 +167,10 @@ public class ArenaManager {
 
 	public void removePlayerFromArena(Player player, Arena arena) {
 		player.setScoreboard(Bukkit.getScoreboardManager().getNewScoreboard());
-		arena.removeFromArena(player);
 		arena.removePlayer(player);
 		arena.removeScore(player);
 		player.removePotionEffect(PotionEffectType.SPEED);
 		player.removePotionEffect(PotionEffectType.JUMP);
-		playerInArena.remove(player);
 
 		if (arena.getMode() == Mode.DUOS)
 			arena.removeFromTeam(arena.getPlayerTeam(player), player);
@@ -177,7 +183,7 @@ public class ArenaManager {
 		}
 
 		if (arena.getStatus() != Status.ENDED) {
-			for (Player p : arena.getAllPlayers()) {
+			for (Player p : arena.GetPlayersAndSpectators()) {
 				p.sendMessage(String.format(Language.player_left_format, player.getName()));
 			}
 		}
@@ -203,14 +209,12 @@ public class ArenaManager {
 
 	public void addSpectatorToArena(Player player, Arena arena) {
 		arena.addSpectator(player);
-		arena.addToArena(player);
-		playerInArena.put(player, arena);
 		if (arena.getMode() == Mode.FFA)
 			createScoreboardFFA(player);
 		else
 			createScoreboardDuos(player);
 
-		for (Player p : arena.getAllPlayers())
+		for (Player p : arena.GetPlayersAndSpectators())
 			p.sendMessage(String.format(Language.player_spectating_format, player.getName()));
 
 		oldMode.put(player, player.getGameMode());
@@ -220,12 +224,10 @@ public class ArenaManager {
 	}
 
 	public void removeSpectatorFromArena(Player player, Arena arena) {
-		arena.removeFromArena(player);
 		arena.removeSpectator(player);
-		playerInArena.remove(player);
 		player.setScoreboard(Bukkit.getScoreboardManager().getNewScoreboard());
 
-		for (Player p : arena.getAllPlayers())
+		for (Player p : arena.GetPlayersAndSpectators())
 			p.sendMessage(String.format(Language.player_stopped_spectating_format, player.getName()));
 
 		toLobby(player);
@@ -266,7 +268,6 @@ public class ArenaManager {
 
 		Arena arena = new Arena(name, Status.SETTING_UP, mode);
 		arenas.add(arena);
-		arenaNames.add(name);
 		arena.arena_timer = GetGameTime(arena);
 		plugin.saveArena(arena);
 		return true;
@@ -275,14 +276,16 @@ public class ArenaManager {
 	/*
 	 * @return true if arena was removed.
 	 */
-	public boolean removeArena(String arena) {
+	public boolean removeArena(String arena) 
+	{
 		if (!exists(arena))
+		{
 			return false;
+		}
 
 		Arena a = getArena(arena);
 
 		arenas.remove(a);
-		arenaNames.remove(arena);
 		plugin.getCfg().deleteArena(arena);
 		return true;
 	}
@@ -300,10 +303,16 @@ public class ArenaManager {
 	/*
 	 * @return true if exists
 	 */
-	public boolean exists(String arena) {
-		for (String name : arenaNames)
-			if (name.equals(arena))
+	public boolean exists(String arena_name) 
+	{
+		for (Arena arena : arenas)
+		{
+			if (arena.getName().equalsIgnoreCase(arena_name))
+			{
 				return true;
+			}
+		}
+		
 		return false;
 	}
 
@@ -380,7 +389,7 @@ public class ArenaManager {
 
 			List<Player> toRemove = new ArrayList<>();
 
-			for (Player p : arena.getAllPlayers()) {
+			for (Player p : arena.GetPlayersAndSpectators()) {
 
 				if (arena.getPlayerTeam(p) == winners)
 					Utils.addWin(p, plugin.playerStats);
@@ -408,7 +417,6 @@ public class ArenaManager {
 		}
 
 		arena.removeAllPowerups();
-		arena.getAllPlayers().clear();
 		arena.getPlayers().clear();
 		arena.getSpectators().clear();
 		arena.clearScores();
@@ -475,7 +483,7 @@ public class ArenaManager {
 
 			List<Player> toRemove = new ArrayList<>();
 
-			for (Player p : arena.getAllPlayers()) 
+			for (Player p : arena.getPlayers()) 
 			{
 				if (tied_players.size() > 1)
 				{
@@ -540,7 +548,6 @@ public class ArenaManager {
 		}
 
 		arena.removeAllPowerups();
-		arena.getAllPlayers().clear();
 		arena.getPlayers().clear();
 		arena.getSpectators().clear();
 		arena.clearScores();
