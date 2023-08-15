@@ -364,7 +364,7 @@ public class GibCraft extends JavaPlugin {
 			a.setBoundaries(new Location[] { corner1, corner2 });
 			am.arenas.add(a);
 			am.arenaNames.add(name);
-			am.arenaTimer.put(a, am.GetGameTime(a));
+			a.arena_timer = am.GetGameTime(a);
 		}
 	}
 

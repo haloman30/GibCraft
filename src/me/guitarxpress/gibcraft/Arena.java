@@ -1,5 +1,6 @@
 package me.guitarxpress.gibcraft;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -13,6 +14,7 @@ import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
 import org.bukkit.World;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
@@ -35,6 +37,11 @@ public class Arena
 		public Location location;
 		public PowerUpPointType type;
 	}
+	
+	// -- Arena Configuration --
+	
+	FileConfiguration arena_config = null;
+	File arena_config_file = null;
 
 	private String name;
 	private Status status;
@@ -42,6 +49,18 @@ public class Arena
 	private List<Player> players;
 	private List<Player> spectators;
 	private Location[] boundaries;
+	public ArrayList<Location> spawn_points;
+	public ArrayList<PowerUpPoint> powerup_points;
+	public boolean game_time_override = false;
+	public boolean respawn_time_override = false;
+	public boolean max_frags_override = false;
+	public boolean max_players_override = false;
+	public int game_time = -1;
+	public int respawn_time = 3;
+	public int max_frags = 20;
+	public int max_players = 4;
+	
+	// -- Game Session Data --
 
 	private Map<Player, Integer> scores;
 
@@ -54,18 +73,8 @@ public class Arena
 	private int powerup_timer = 0;
 	int armor_stand_rotation = 0;
 	
-	public ArrayList<Location> spawn_points;
-	public ArrayList<PowerUpPoint> powerup_points;
-	
-	public boolean game_time_override = false;
-	public boolean respawn_time_override = false;
-	public boolean max_frags_override = false;
-	public boolean max_players_override = false;
-	
-	public int game_time = -1;
-	public int respawn_time = 3;
-	public int max_frags = 20;
-	public int max_players = 4;
+	public int arena_timer = 0;
+	public int countdown_timer = 0;
 
 	public Arena(String name, Status status, Mode mode) {
 		this.name = name;
@@ -453,15 +462,13 @@ public class Arena
 			
 			// Update Arena Timer
 			{
-				int timer = am.arenaTimer.get(this);
-				
-				if (timer > 0)
+				if (arena_timer > 0)
 				{
-					am.arenaTimer.put(this, --timer);
+					arena_timer--;
 					
-					if (timer == 60 || timer == 30 || timer == 10)
+					if (arena_timer == 60 || arena_timer == 30 || arena_timer == 10)
 					{
-						BroadcastMessage(String.format(Language.game_ending_warning, timer));
+						BroadcastMessage(String.format(Language.game_ending_warning, arena_timer));
 						
 						for (Player player : GetPlayersAndSpectators())
 						{
@@ -471,7 +478,7 @@ public class Arena
 				}
 				else 
 				{
-					am.arenaTimer.put(this, 0);
+					arena_timer = 0;
 					
 					if (getMode() == Mode.FFA)
 					{

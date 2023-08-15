@@ -158,10 +158,10 @@ public class PlayerInteract implements Listener {
 					
 					if (arena.getMode() == Mode.FFA) {
 						if (arena.getScores().get(p) >= max_frags)
-							am.arenaTimer.put(arena, 0);
+							arena.arena_timer = 0;
 					} else {
 						if (arena.getTeamScore("Red") >= max_frags || arena.getTeamScore("Blue") >= max_frags) {
-							am.arenaTimer.put(arena, 0);
+							arena.arena_timer = 0;
 						}
 					}
 

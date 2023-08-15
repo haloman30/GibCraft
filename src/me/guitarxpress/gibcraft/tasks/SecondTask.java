@@ -60,47 +60,47 @@ public class SecondTask implements Runnable
 		
 		// Arena countdown timers
 		{
-			ArrayList<Arena> arenas_to_remove = new ArrayList<Arena>();
-			
-			for (Arena arena : am.arenaCountdownTimer.keySet())
+			for (Arena arena : am.arenas)
 			{
-				int time = am.arenaCountdownTimer.get(arena);
+				int time = arena.countdown_timer;
 				
-				if ((time % 5 == 0 && time >= 5) || (time > 0 && time < 5)) 
+				if (time >= 0)
 				{
-					for (Player player : arena.getPlayers()) 
+					if ((time % 5 == 0 && time >= 5) || (time > 0 && time < 5)) 
 					{
-						player.sendMessage(String.format(Language.arena_starting_in_format, time));
-						player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_HAT, 1f, 1f);
-					}
-				} 
-				else if (time <= 0 && arena.getPlayerCount() >= arena.getMode().minPlayers()) 
-				{
-					am.start(arena);
-					arenas_to_remove.add(arena);
-				}
-
-				if (arena.getPlayerCount() < arena.getMode().minPlayers()) 
-				{
-					arenas_to_remove.add(arena);
-					arena.setStatus(Status.CANCELLED);
-					
-					Bukkit.getScheduler().scheduleSyncDelayedTask(GibCraft.instance, new Runnable() 
-					{
-						@Override
-						public void run()
+						for (Player player : arena.getPlayers()) 
 						{
-							arena.setStatus(Status.JOINABLE);
+							player.sendMessage(String.format(Language.arena_starting_in_format, time));
+							player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_HAT, 1f, 1f);
 						}
-					}, 1 * 20);
-				}
+					} 
+					else if (time <= 0 && arena.getPlayerCount() >= arena.getMode().minPlayers()) 
+					{
+						am.start(arena);
+						arena.countdown_timer = -1;
+					}
 
-				am.arenaCountdownTimer.put(arena, time - 1);
-			}
-			
-			for (Arena arena : arenas_to_remove)
-			{
-				am.arenaCountdownTimer.remove(arena);
+					if (arena.getPlayerCount() < arena.getMode().minPlayers()) 
+					{
+						arena.countdown_timer = -1;
+						arena.setStatus(Status.CANCELLED);
+						
+						Bukkit.getScheduler().scheduleSyncDelayedTask(GibCraft.instance, new Runnable() 
+						{
+							@Override
+							public void run()
+							{
+								arena.setStatus(Status.JOINABLE);
+							}
+						}, 1 * 20);
+					}
+
+					arena.countdown_timer = time - 1;
+				}
+				else 
+				{
+					arena.countdown_timer = -1;
+				}
 			}
 		}
 		

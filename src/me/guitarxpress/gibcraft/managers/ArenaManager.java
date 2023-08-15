@@ -41,8 +41,8 @@ public class ArenaManager {
 	public List<String> arenaNames;
 	private Location lobby;
 	private Map<Player, Arena> playerInArena;
-	public Map<Arena, Integer> arenaCountdownTimer = new HashMap<>();
-	public Map<Arena, Integer> arenaTimer = new HashMap<>();
+	//public Map<Arena, Integer> arenaCountdownTimer = new HashMap<>();
+	//public Map<Arena, Integer> arenaTimer = new HashMap<>();
 	private int gameTime; // Time in seconds
 	private int maxFrags;
 	private int maxPlayers;
@@ -66,8 +66,9 @@ public class ArenaManager {
 		playerInArena = new HashMap<>();
 		this.gm = plugin.getGameManager();
 
-		for (Arena arena : arenas) {
-			arenaTimer.put(arena, GetGameTime(arena));
+		for (Arena arena : arenas) 
+		{
+			arena.arena_timer = GetGameTime(arena);
 		}
 
 	}
@@ -256,14 +257,17 @@ public class ArenaManager {
 	/*
 	 * @return true if arena was created.
 	 */
-	public boolean createArena(String name, Mode mode) {
+	public boolean createArena(String name, Mode mode) 
+	{
 		if (exists(name))
+		{
 			return false;
+		}
 
 		Arena arena = new Arena(name, Status.SETTING_UP, mode);
 		arenas.add(arena);
 		arenaNames.add(name);
-		arenaTimer.put(arena, GetGameTime(arena));
+		arena.arena_timer = GetGameTime(arena);
 		plugin.saveArena(arena);
 		return true;
 	}
@@ -350,7 +354,7 @@ public class ArenaManager {
 			p.teleport(arena.selectRandomSpawn());
 		}
 
-		arenaTimer.put(arena, GetGameTime(arena));
+		arena.arena_timer = GetGameTime(arena);
 
 		gm.start(arena);
 	}
@@ -364,7 +368,7 @@ public class ArenaManager {
 			Bukkit.broadcastMessage(String.format(Language.arena_starting_warning_format, arena.getName(), timeToStart));
 		}
 
-		arenaCountdownTimer.put(arena, timeToStart);
+		arena.countdown_timer = timeToStart;
 	}
 
 	public void endDuos(Arena arena) {
@@ -550,7 +554,7 @@ public class ArenaManager {
 		Arena arena = getPlayerArena(p);
 		ScoreboardManager manager = Bukkit.getScoreboardManager();
 		Scoreboard board = manager.getNewScoreboard();
-		Objective obj = board.registerNewObjective("Scoreboard", "dummy", "§6Time Left: §e" + arenaTimer.get(arena));
+		Objective obj = board.registerNewObjective("Scoreboard", "dummy", "§6Time Left: §e" + arena.arena_timer);
 		obj.setDisplaySlot(DisplaySlot.SIDEBAR);
 
 		Team fragLimit = board.registerNewTeam("fragLimit");
@@ -570,7 +574,7 @@ public class ArenaManager {
 		Arena arena = getPlayerArena(p);
 		ScoreboardManager manager = Bukkit.getScoreboardManager();
 		Scoreboard board = manager.getNewScoreboard();
-		Objective obj = board.registerNewObjective("Scoreboard", "dummy", "§6Time Left: §e" + arenaTimer.get(arena));
+		Objective obj = board.registerNewObjective("Scoreboard", "dummy", "§6Time Left: §e" + arena.arena_timer);
 		obj.setDisplaySlot(DisplaySlot.SIDEBAR);
 
 		Team fragLimit = board.registerNewTeam("fragLimit");
