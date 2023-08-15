@@ -286,7 +286,7 @@ public class ArenaManager {
 		Arena a = getArena(arena);
 
 		arenas.remove(a);
-		plugin.getCfg().deleteArena(arena);
+		a.DeleteConfig();
 		return true;
 	}
 

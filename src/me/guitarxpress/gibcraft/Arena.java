@@ -15,6 +15,7 @@ import org.bukkit.Particle;
 import org.bukkit.Sound;
 import org.bukkit.World;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
@@ -29,6 +30,7 @@ import me.guitarxpress.gibcraft.enums.PowerUpPointType;
 import me.guitarxpress.gibcraft.enums.Status;
 import me.guitarxpress.gibcraft.events.PlayerInteract;
 import me.guitarxpress.gibcraft.managers.ArenaManager;
+import me.guitarxpress.gibcraft.utils.ConfigClass;
 import me.guitarxpress.gibcraft.utils.Utils;
 
 public class Arena 
@@ -563,6 +565,11 @@ public class Arena
 	
 	public void SaveConfig()
 	{
+		if (arena_config == null)
+		{
+			arena_config = new YamlConfiguration();
+		}
+		
 		arena_config.set("Name", name);
 		arena_config.set("Status", Status.valueToString(status));
 		arena_config.set("Mode", mode.toString());
@@ -607,12 +614,26 @@ public class Arena
 		
 		try
 		{
+			if (arena_config_file == null)
+			{
+				arena_config_file = new File(ConfigClass.arenaFolder, name + ".yml");
+			}
+			
 			arena_config.save(arena_config_file);
 			Logger.LogEvent("Saved configuration file for arena '" + name + "'");
 		}
 		catch (Exception ex)
 		{
-			Logger.LogEvent("Failed to save file for arena: " + name + " §e-> §c" + ex, LogLevel.ERROR);
+			Logger.LogEvent("Failed to save file for arena '" + name + "': ", LogLevel.ERROR);
+			ex.printStackTrace();
+		}
+	}
+	
+	public void DeleteConfig()
+	{
+		if (arena_config_file != null)
+		{
+			arena_config_file.delete();
 		}
 	}
 }

@@ -13,7 +13,9 @@ import org.bukkit.configuration.file.YamlConfiguration;
 
 import me.guitarxpress.gibcraft.Arena;
 import me.guitarxpress.gibcraft.GibCraft;
+import me.guitarxpress.gibcraft.Logger;
 import me.guitarxpress.gibcraft.Stats;
+import me.guitarxpress.gibcraft.Logger.LogLevel;
 import me.guitarxpress.gibcraft.managers.ArenaManager;
 
 public class ConfigClass {
@@ -23,101 +25,35 @@ public class ConfigClass {
 	public static File dataFile;
 	public static FileConfiguration dataCfg;
 
-	private File playerFolder;
-	private File arenaFolder;
+	public static File playerFolder;
+	public static File arenaFolder;
 
-	public String playerPath = "Players";
-	public String arenaPath = "Arenas";
-
-	//private Map<String, FileConfiguration> arenaConfigs = new HashMap<>();
 	private Map<String, FileConfiguration> playerConfigs = new HashMap<>();
-
-	//private Map<String, File> arenaFiles = new HashMap<>();
 	private Map<String, File> playerFiles = new HashMap<>();
 
-	private ArenaManager am;
-
-	public ConfigClass(GibCraft plugin) {
+	public ConfigClass(GibCraft plugin) 
+	{
 		this.plugin = plugin;
 
-		am = plugin.getArenaManager();
-
-		arenaFolder = new File(plugin.getDataFolder(), arenaPath);
-		playerFolder = new File(plugin.getDataFolder(), playerPath);
+		arenaFolder = new File(plugin.getDataFolder(), "Arenas");
+		playerFolder = new File(plugin.getDataFolder(), "Players");
 
 		dataFile = new File(plugin.getDataFolder(), "data.yml");
 
-		if (!dataFile.exists()) {
-			try {
+		if (!dataFile.exists()) 
+		{
+			try 
+			{
 				dataFile.createNewFile();
-			} catch (IOException e) {
-				Bukkit.getServer().getConsoleSender()
-						.sendMessage("§c[" + plugin.getName() + "] Failed to create data.yml\n" + "-> " + e);
+			} 
+			catch (IOException ex) 
+			{
+				Logger.LogEvent("Failed to create data.yml: ", LogLevel.ERROR);
+				ex.printStackTrace();
 			}
 		}
 
 		dataCfg = YamlConfiguration.loadConfiguration(dataFile);
-	}
-
-	public void createNewArenaFiles() 
-	{
-		if (!arenaFolder.exists())
-		{
-			arenaFolder.mkdir();
-		}
-
-		for (Arena arena : am.arenas) 
-		{
-			arena.arena_config_file = new File(arenaFolder, arena.getName() + ".yml");
-			
-			if (!arena.arena_config_file.exists())
-			{
-				try 
-				{
-					arena.arena_config_file.createNewFile();
-				} 
-				catch (IOException e) 
-				{
-					Bukkit.getServer().getConsoleSender().sendMessage("§c[" + plugin.getName() + "] Failed to create file for arena: " + arena + " §e-> §c" + e);
-				}
-			}
-		}
-	}
-
-	public void loadArenaFiles() 
-	{
-		if (getArenaNameList() == null)
-		{
-			return;
-		}
-		
-		for (Arena arena : am.arenas) 
-		{
-			arena.arena_config_file = new File(arenaFolder, arena + ".yml");
-			
-			if (!arena.arena_config_file.exists())
-			{
-				try 
-				{
-					arena.arena_config_file.createNewFile();
-				} 
-				catch (IOException e) 
-				{
-					Bukkit.getServer().getConsoleSender().sendMessage(
-							"§c[" + plugin.getName() + "] Failed to load file for arena: " + arena + " §e-> §c" + e);
-				}
-			}
-		}
-	}
-
-	public void deleteArena(String name) 
-	{
-		Arena arena = am.getArena(name);
-		
-		if (arena != null && arena.arena_config_file != null)
-		{
-			arena.arena_config_file.delete();
-		}
 	}
 
 	public void createNewPlayerFiles() {
@@ -197,17 +133,6 @@ public class ConfigClass {
 		return arena_files;
 	}
 
-	public List<String> getArenaNameList() {
-		String[] array = arenaFolder.list();
-		if (array == null)
-			return null;
-		List<String> arenas = new ArrayList<>();
-		for (int i = 0; i < array.length; i++) {
-			arenas.add(array[i].substring(0, array[i].length() - 4));
-		}
-		return arenas;
-	}
-
 	public List<String> getPlayerNameList() {
 		String[] array = playerFolder.list();
 		if (array == null)
@@ -224,10 +149,14 @@ public class ConfigClass {
 	}
 
 	public static void saveDataCfg() {
-		try {
+		try 
+		{
 			dataCfg.save(dataFile);
-		} catch (IOException e) {
-			Bukkit.getServer().getConsoleSender().sendMessage("§c[GibCraft] Failed to save data.yml");
+		} 
+		catch (IOException ex) 
+		{
+			Logger.LogEvent("Failed to save data.yml: " + ex.getMessage(), LogLevel.ERROR);
+			ex.printStackTrace();
 		}
 	}
 }

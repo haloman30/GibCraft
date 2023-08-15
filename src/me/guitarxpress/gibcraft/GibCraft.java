@@ -325,15 +325,8 @@ public class GibCraft extends JavaPlugin {
 		}
 	}
 
-	public void loadArenas() {
-		cfg.loadArenaFiles();
-		List<String> arenas = cfg.getArenaNameList();
-		
-		if (arenas == null)
-		{
-			return;
-		}
-		
+	public void loadArenas() 
+	{
 		for (File arena_config_file : cfg.GetArenaFiles()) 
 		{
 			FileConfiguration aCfg = new YamlConfiguration();
@@ -392,7 +385,6 @@ public class GibCraft extends JavaPlugin {
 
 	public void saveArena(Arena arena) 
 	{
-		cfg.createNewArenaFiles();
 		arena.SaveConfig();
 	}
 
