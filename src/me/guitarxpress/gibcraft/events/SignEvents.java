@@ -99,6 +99,9 @@ public class SignEvents implements Listener {
 
 			if (!sign.getLine(0).equals("§7[§4Gib§6Craft§7]"))
 				return;
+			
+			// Gibcraft sign confirmed past this point
+			event.setCancelled(true);
 
 			if (sign.getLine(1).isEmpty()) {
 				if (sign.getLine(2).equals("§cLeave Queue")) {
