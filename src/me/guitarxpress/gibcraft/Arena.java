@@ -47,8 +47,9 @@ public class Arena
 	public File arena_config_file = null;
 
 	private String name;
+	private Mode mode;
 	private Status status;
-	private Location[] boundaries;
+	private Location[] boundaries = new Location[2];
 	public ArrayList<Location> spawn_points;
 	public ArrayList<PowerUpPoint> powerup_points;
 	public boolean game_time_override = false;
@@ -61,36 +62,25 @@ public class Arena
 	public int max_players = 4;
 	
 	// -- Game Session Data --
-
-	private Mode mode;
-	private List<Player> players;
-	private List<Player> spectators;
-	private Map<Player, Integer> scores;
-
-	//private List<Player> allPlayers;
-
+	
+	private ArrayList<Player> players = new ArrayList<>();
+	private ArrayList<Player> spectators = new ArrayList<>();
+	private HashMap<Player, Integer> scores = new HashMap<>();
 	public HashMap<ArmorStand, Integer> powerups = new HashMap<ArmorStand, Integer>();
 
-	private Map<String, List<Player>> teams;
-	private Map<String, Integer> teamScore;
+	private HashMap<String, List<Player>> teams = new HashMap<>();
+	private HashMap<String, Integer> teamScore = new HashMap<>();
 	private int powerup_timer = 0;
 	int armor_stand_rotation = 0;
 	
 	public int arena_timer = 0;
 	public int countdown_timer = 0;
 
-	public Arena(String name, Status status, Mode mode) {
-		this.name = name;
-		this.status = status;
-		this.mode = mode;
-		this.players = new ArrayList<>();
-		this.spectators = new ArrayList<>();
-		this.boundaries = new Location[2];
-		this.scores = new HashMap<>();
-		//this.allPlayers = new ArrayList<>();
-		this.powerups = new HashMap<ArmorStand, Integer>();
-		this.teams = new HashMap<>();
-		this.teamScore = new HashMap<>();
+	public Arena(String _name, Status _status, Mode _mode) 
+	{
+		name = _name;
+		status = _status;
+		mode = _mode;
 	}
 
 	public String getName() {
@@ -121,7 +111,7 @@ public class Arena
 		return players;
 	}
 
-	public void setPlayers(List<Player> players) {
+	public void setPlayers(ArrayList<Player> players) {
 		this.players = players;
 	}
 
@@ -140,7 +130,7 @@ public class Arena
 		return spectators;
 	}
 
-	public void setSpectators(List<Player> spectators) {
+	public void setSpectators(ArrayList<Player> spectators) {
 		this.spectators = spectators;
 	}
 
@@ -176,7 +166,7 @@ public class Arena
 		return scores;
 	}
 
-	public void setScores(Map<Player, Integer> scores) {
+	public void setScores(HashMap<Player, Integer> scores) {
 		this.scores = scores;
 	}
 
@@ -288,7 +278,7 @@ public class Arena
 		return this.teams;
 	}
 
-	public void setTeams(Map<String, List<Player>> teams) {
+	public void setTeams(HashMap<String, List<Player>> teams) {
 		this.teams = teams;
 	}
 
@@ -349,7 +339,7 @@ public class Arena
 		return teamScore.get(team);
 	}
 
-	public void setTeamScore(Map<String, Integer> teamScore) {
+	public void setTeamScore(HashMap<String, Integer> teamScore) {
 		this.teamScore = teamScore;
 	}
 
